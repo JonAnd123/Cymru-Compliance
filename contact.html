@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact &amp; Book a Demo — Cymru Compliance</title>
+<meta name="description" content="Book a demo, register your interest, or get in touch — separate paths for independent practices and corporate dental groups.">
+<link rel="icon" href="img/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="contact">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="container nav">
+    <a href="index.html" class="brand"><img src="img/logo-header.png" alt="Cymru Compliance logo"><span>Cymru <span class="cy">Compliance</span></span></a>
+    <nav class="nav-links" id="nav-links">
+      <a href="index.html" data-i18n="nav-home">Home</a>
+      <a href="services.html" data-i18n="nav-services">Services</a>
+      <a href="pricing.html" data-i18n="nav-pricing">Pricing</a>
+      <a href="hiw-guide.html" data-i18n="nav-hiw">HIW Guide</a>
+      <a href="contact.html" data-i18n="nav-contact">Contact</a>
+      <a href="portal.html" data-i18n="nav-portal">Portal Login</a>
+    </nav>
+    <div class="nav-actions">
+      <div class="lang-toggle">
+        <button data-lang="en" class="active">EN</button>
+        <button data-lang="cy">CY</button>
+      </div>
+      <a href="contact.html" class="btn btn-primary desktop-only" data-i18n="nav-cta">Book a demo</a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" style="padding:64px 0 24px;">
+    <div class="container text-center">
+      <span class="eyebrow" data-i18n="contact-eyebrow">Get in touch</span>
+      <h1 data-i18n="contact-title">Book a demo, or register your interest</h1>
+      <p class="lede" style="margin:0 auto;" data-i18n="contact-sub">Whether you run one practice or a group of them, tell us a little about you and we'll come back to you quickly.</p>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="container contact-grid">
+      <div>
+        <h3 data-i18n="contact-side-title">What happens next</h3>
+        <ul class="card-list">
+          <li data-i18n="contact-side-li-1">We'll reply within one working day to arrange a short demo, tailored to an independent practice or a group view</li>
+          <li data-i18n="contact-side-li-2">No obligation — registering interest just puts you on the list for updates as the portal opens up</li>
+          <li data-i18n="contact-side-li-3">Group enquiries are routed to a conversation about the whole group, not a single site</li>
+        </ul>
+        <hr class="divider">
+        <h3 data-i18n="contact-side-title-2">Prefer email?</h3>
+        <p data-i18n="contact-side-body-2">Write to us directly and we'll pick it up from there.</p>
+        <p><a href="mailto:jonathan.milton.anderson@gmail.com">jonathan.milton.anderson@gmail.com</a></p>
+      </div>
+
+      <div class="form-shell">
+        <div id="interest"></div>
+        <form id="contact-form">
+          <div class="path-toggle" data-input-target="practice-type" id="group">
+            <div class="path-option selected" data-value="Independent practice">
+              <strong data-i18n="contact-path-1-title">Independent practice</strong>
+              <span data-i18n="contact-path-1-body">I run or manage a single dental practice</span>
+            </div>
+            <div class="path-option" data-value="Corporate group">
+              <strong data-i18n="contact-path-2-title">Corporate group</strong>
+              <span data-i18n="contact-path-2-body">I represent a group of two or more practices</span>
+            </div>
+          </div>
+          <input type="hidden" name="practice-type" id="practice-type" value="Independent practice">
+
+          <div class="field-row">
+            <div class="field">
+              <label for="cf-name" data-i18n="contact-label-name">Full name</label>
+              <input type="text" id="cf-name" name="Name" required>
+            </div>
+            <div class="field">
+              <label for="cf-email" data-i18n="contact-label-email">Email</label>
+              <input type="email" id="cf-email" name="Email" required>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="cf-practice" data-i18n="contact-label-practice">Practice / group name</label>
+              <input type="text" id="cf-practice" name="Practice or group name">
+            </div>
+            <div class="field">
+              <label for="cf-sites" data-i18n="contact-label-sites">Number of practices</label>
+              <input type="number" id="cf-sites" name="Number of practices" min="1">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="cf-type" data-i18n="contact-label-type">Enquiry type</label>
+            <select id="cf-type" name="enquiry-type">
+              <option data-i18n="contact-opt-demo">Book a demo</option>
+              <option data-i18n="contact-opt-interest">Expression of interest</option>
+              <option data-i18n="contact-opt-general">General enquiry</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="cf-message" data-i18n="contact-label-message">Message</label>
+            <textarea id="cf-message" name="Message" rows="4" placeholder="Tell us a little about your practice or group" data-i18n-placeholder="contact-placeholder-message"></textarea>
+          </div>
+
+          <div class="field checkbox-field">
+            <input type="checkbox" id="cf-consent" required>
+            <label for="cf-consent" style="margin:0;font-weight:400;" data-i18n="contact-consent">I'm happy to be contacted about Cymru Compliance. See our privacy policy for how we handle your data.</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" data-i18n="contact-submit">Send enquiry</button>
+        </form>
+        <div class="form-success" data-i18n="contact-success">Thanks — your email client should have opened with your enquiry ready to send. If nothing opened, email us directly at jonathan.milton.anderson@gmail.com.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="brand"><img src="img/logo-header.png" alt="Cymru Compliance logo" style="width:34px;height:34px;"><span>Cymru Compliance</span></div>
+        <p class="small" data-i18n="footer-tagline" style="margin-top:14px;">Dental compliance, made simple — built for Wales, for HIW-registered practices and groups.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer-product">Product</h4>
+        <ul>
+          <li><a href="services.html" data-i18n="footer-services">Services</a></li>
+          <li><a href="pricing.html" data-i18n="footer-pricing">Pricing</a></li>
+          <li><a href="portal.html" data-i18n="footer-portal">Portal login</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="footer-company">Company</h4>
+        <ul>
+          <li><a href="hiw-guide.html" data-i18n="footer-hiw">HIW guide</a></li>
+          <li><a href="contact.html" data-i18n="footer-contact">Contact</a></li>
+          <li><a href="contact.html#group" data-i18n="footer-group">Group / multi-practice enquiries</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="footer-legal">Legal</h4>
+        <ul>
+          <li><a href="#" data-i18n="footer-privacy">Privacy policy</a></li>
+          <li><a href="#" data-i18n="footer-terms">Terms of service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; <span data-year></span> Cymru Compliance. <span data-i18n="footer-rights">All rights reserved.</span></span>
+      <span data-i18n="footer-madefor">Made for Welsh dental practices, in English a Chymraeg.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/translations.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
