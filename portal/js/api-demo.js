@@ -138,13 +138,14 @@
       { id: "q2", created_at: ts(-3), kind: "interest", practice_type: "Independent practice", name: "Dr Tom Hart", email: "tom@wrexhamsmiles.example", practice_name: "Wrexham Smiles", sites: 1, role: null, message: "", language: "en", status: "contacted" },
       { id: "q3", created_at: ts(-6), kind: "waitlist", practice_type: null, name: "Bethan Cole", email: "bethan@example.com", practice_name: "Cole Dental", sites: null, role: "Practice Manager", message: "", language: "en", status: "new" }
     );
+    if (CC.demoHrSeed) CC.demoHrSeed(db);
     return db;
   }
 
   CC.makeDemoApi = function () {
     var db, uid = null;
     function load() {
-      try { var raw = localStorage.getItem(DB_KEY); if (raw) { db = JSON.parse(raw); return; } } catch (e) {}
+      try { var raw = localStorage.getItem(DB_KEY); if (raw) { db = JSON.parse(raw); if (!db.hr_staff && CC.demoHrSeed) { CC.demoHrSeed(db); save(); } return; } } catch (e) {}
       db = seed(); save();
     }
     function save() { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (e) {} }
@@ -413,6 +414,8 @@
         },
         revoke: function (gid) { var g = byId(db.grants, gid); if (!g || !canManage(g.practice_id)) return deny(); g.revoked = true; logAudit("revoke_inspector", "grant", gid, g.practice_id); save(); return ok(); }
       },
+
+      hr: CC.makeDemoHr({ db: function () { return db; }, me: me, uid: function () { return uid; }, canManage: canManage, isGA: isGA, save: save, ok: ok, deny: deny, logAudit: logAudit, byId: byId }),
 
       audit: {
         log: function (action, entity, entityId, pid, detail) { if (pid && !canRead(pid)) return Promise.resolve(); logAudit(action, entity, entityId, pid, detail); save(); return Promise.resolve(); },

@@ -13,6 +13,9 @@
     check:      { label: "Compliance check",    ico: "✔",  scoped: true,  roles: ["principal", "practice_manager", "platform_admin"] },
     evidence:   { label: "Evidence",            ico: "🗂", scoped: true,  roles: ["principal", "practice_manager", "platform_admin"] },
     training:   { label: "Team training",       ico: "🎓", scoped: true,  roles: ["principal", "practice_manager"] },
+    hr:         { label: "HR",                  ico: "👥", scoped: true,  roles: ["principal", "practice_manager", "platform_admin", "group_admin"] },
+    hrgroup:    { label: "Group HR",            ico: "👥", roles: ["group_admin"] },
+    myhr:       { label: "My HR",               ico: "🪪", roles: ["principal", "practice_manager", "staff"] },
     my:         { label: "My records & training", ico: "👤", roles: ["principal", "practice_manager", "staff"] },
     bookings:   { label: "Bookings",            ico: "📅", roles: ["principal", "practice_manager", "group_admin", "platform_admin"] },
     team:       { label: "Team",                ico: "👥", scoped: true,  roles: ["principal", "practice_manager"] },
@@ -25,12 +28,12 @@
     settings:   { label: "Settings",            ico: "⚙",  roles: ["principal", "practice_manager", "staff", "group_admin", "inspector", "platform_admin"] }
   };
   var NAV = {
-    principal:        ["dashboard", "check", "evidence", "training", "my", "bookings", "team", "inspectors", "audit", "settings"],
-    practice_manager: ["dashboard", "check", "evidence", "training", "my", "bookings", "team", "audit", "settings"],
-    staff:            ["dashboard", "my", "settings"],
-    group_admin:      ["group", "practices", "bookings", "audit", "settings"],
+    principal:        ["dashboard", "check", "evidence", "training", "my", "hr", "myhr", "bookings", "team", "inspectors", "audit", "settings"],
+    practice_manager: ["dashboard", "check", "evidence", "training", "my", "hr", "myhr", "bookings", "team", "audit", "settings"],
+    staff:            ["dashboard", "my", "myhr", "settings"],
+    group_admin:      ["group", "hrgroup", "practices", "bookings", "audit", "settings"],
     inspector:        ["inspect", "settings"],
-    platform_admin:   ["users", "orgs", "enquiries", "bookings", "dashboard", "evidence", "check", "audit", "settings"]
+    platform_admin:   ["users", "orgs", "enquiries", "bookings", "dashboard", "evidence", "check", "hr", "audit", "settings"]
   };
   var MULTI = ["platform_admin", "group_admin", "inspector"];
 
@@ -183,6 +186,9 @@
     training: P('<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>'),
     my: P('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'),
     bookings: P('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
+    hr: P('<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><path d="M17 8h5M17 12h5M17 16h3"/>'),
+    hrgroup: P('<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><path d="M17 8h5M17 12h5M17 16h3"/>'),
+    myhr: P('<rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2.2"/><path d="M5.5 16c.6-1.6 2-2.4 3.5-2.4s2.9.8 3.5 2.4M15 10h3M15 13h3"/>'),
     team: P('<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2.5.6 4 2.3 4 5"/>'),
     inspectors: P('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'),
     inspect: P('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'),
@@ -222,7 +228,7 @@
     if (!ROUTES[route] || ROUTES[route].roles.indexOf(role) < 0) { location.hash = "#/" + NAV[role][0]; return Promise.resolve(); }
     S.route = route;
     document.body.classList.remove("nav-open");
-    document.querySelectorAll("#side-nav a").forEach(function (a) { a.classList.toggle("active", a.getAttribute("data-route") === route || (route === "dashboard" && a.getAttribute("data-route") === "group" && role === "group_admin")); });
+    document.querySelectorAll("#side-nav a").forEach(function (a) { a.classList.toggle("active", a.getAttribute("data-route") === route || (route === "dashboard" && a.getAttribute("data-route") === "group" && role === "group_admin") || (route === "hr" && a.getAttribute("data-route") === "hrgroup" && role === "group_admin")); });
     $("page-title").textContent = CC.t(ROUTES[route].label);
     document.title = CC.t(ROUTES[route].label) + " — Cymru Compliance";
     buildPracticeSelect(route);

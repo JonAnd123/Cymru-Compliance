@@ -16,7 +16,7 @@ async function newApp(userId, lang) {
   w.URL.createObjectURL = () => "blob:demo";
   w.print = () => {}; w.open = () => {};
   if (lang) w.localStorage.setItem("cc_lang", lang);
-  const files = ["js/site-config.js", "portal/js/scoring.js", "portal/js/core.js", "portal/js/i18n.js", "portal/js/demo-content.js", "portal/js/api-demo.js", "portal/js/api-supabase.js", "portal/js/views-dashboard.js", "portal/js/views-practice.js", "portal/js/views-group.js", "portal/js/views-admin.js", "portal/js/app.js"];
+  const files = ["js/site-config.js", "portal/js/scoring.js", "portal/js/core.js","portal/js/hr-core.js", "portal/js/i18n.js","portal/js/i18n-hr.js", "portal/js/demo-content.js", "portal/js/demo-hr.js","portal/js/api-demo.js", "portal/js/api-supabase.js", "portal/js/views-dashboard.js", "portal/js/views-practice.js", "portal/js/views-group.js", "portal/js/views-admin.js", "portal/js/views-hr.js","portal/js/app.js"];
   for (const f of files) w.eval(fs.readFileSync(path.join(ROOT, f), "utf8") + "\n//# sourceURL=" + f);
   await sleep(60);
   if (userId) { w.document.querySelector(`[data-demo="${userId}"]`).click(); await sleep(150); }
@@ -151,6 +151,137 @@ const ROLES = [["u_admin", "platform_admin"], ["u_ga", "group_admin"], ["u_pr1",
   ok("admin: invite created", /admin2@x\.com/.test(view(app).innerHTML));
   await go(app, "enquiries"); ok("admin: enquiries listed", /Lowri Bevan/.test(view(app).innerHTML));
   await go(app, "bookings"); const comp = view(app).querySelector('[data-act="complete"]'); ok("admin: can complete bookings", !!comp);
+  app.dom.window.close();
+
+
+  // ---------------- HR module ----------------
+  console.log("\n=== HR");
+  const submit = (a, root) => { (root || modal(a)).querySelector("form").dispatchEvent(new a.w.Event("submit", { cancelable: true })); };
+  app = await newApp("u_pm1");
+  await go(app, "hr");
+  ok("hr: staff cards shown", view(app).querySelectorAll(".hr-card").length >= 6, String(view(app).querySelectorAll(".hr-card").length));
+  ok("hr: shows only own practice staff", !/Newport|Callum Reid/.test(view(app).innerHTML));
+  ok("hr: initials avatar for staff without photo", view(app).querySelectorAll(".hr-avatar-init").length >= 6);
+  view(app).querySelector('.hr-card[data-act="open"]').click(); await sleep(200);
+  ok("hr: staff record modal opens with 4 tabs", !!modal(app) && modal(app).querySelectorAll("[data-ptab]").length === 4);
+  ok("hr: balance cards in staff record", /Entitlement/.test(modal(app).innerHTML) && modal(app).querySelectorAll(".hr-bal .kpi").length === 4);
+  ok("hr: manager sees edit/record-leave actions", !!modal(app).querySelector('[data-act="edit"]') && !!modal(app).querySelector('[data-act="recordleave"]'));
+  modal(app).querySelector('[data-ptab="docs"]').click();
+  ok("hr: documents tab switches", !modal(app).querySelector('[data-panel="docs"]').hidden && modal(app).querySelector('[data-panel="details"]').hidden);
+  modal(app).querySelector("[data-close]").click();
+  // pending → approve
+  const hrApi = () => app.w.CC.api.hr;
+  const pendBefore = (await hrApi().leave.list({ practice_id: "p1" })).filter(l => l.status === "pending").length;
+  view(app).querySelector('[data-tab="leave"]').click(); await sleep(60);
+  ok("hr: pending requests listed", pendBefore >= 2 && view(app).querySelectorAll('[data-act="approve"]').length === pendBefore);
+  view(app).querySelector('[data-act="approve"]').click(); await sleep(250);
+  const pendAfter = (await hrApi().leave.list({ practice_id: "p1" })).filter(l => l.status === "pending").length;
+  ok("hr: approving a request updates status", pendAfter === pendBefore - 1);
+  const au = await app.w.CC.api.audit.list({ practice_id: "p1" });
+  ok("hr: approval written to audit log", au.some(a => a.action === "hr_leave_approved"));
+  // decline needs modal
+  await go(app, "hr"); view(app).querySelector('[data-tab="leave"]').click(); await sleep(60);
+  view(app).querySelector('[data-act="decline"]').click(); await sleep(60);
+  modal(app).querySelector("[name=note]").value = "Too busy"; submit(app); await sleep(250);
+  ok("hr: decline stores manager note", (await hrApi().leave.list({ practice_id: "p1" })).some(l => l.status === "declined" && l.manager_note === "Too busy"));
+  // calendar + absence
+  await go(app, "hr"); view(app).querySelector('[data-tab="calendar"]').click(); await sleep(60);
+  ok("hr: calendar renders month grid with legend", view(app).querySelectorAll(".cal-cell").length >= 28 && /Sick leave/.test(view(app).innerHTML));
+  view(app).querySelector('[data-act="calnext"]').click(); await sleep(30);
+  ok("hr: calendar next month works", view(app).querySelectorAll(".cal-cell").length >= 28);
+  view(app).querySelector('[data-tab="absence"]').click(); await sleep(60);
+  ok("hr: absence tab shows Bradford factor", /Bradford factor/.test(view(app).innerHTML) && view(app).querySelectorAll("table.data tbody tr").length >= 5);
+  // add staff
+  await go(app, "hr"); view(app).querySelector('[data-act="addstaff"]').click(); await sleep(60);
+  let am = modal(app); am.querySelector("[name=full_name]").value = "Test Newstarter"; am.querySelector("[name=job_title]").value = "Dental nurse"; am.querySelector("[name=email]").value = "test.new@cardiffbaydental.example";
+  submit(app); await sleep(300);
+  ok("hr: add staff member", /Test Newstarter/.test(view(app).innerHTML));
+  // record leave via modal; overlap rejected
+  view(app).querySelector('[data-act="recordleave"]').click(); await sleep(60);
+  let lm = modal(app); const ns = (await hrApi().staff.list({ practice_id: "p1" })).filter(x => x.full_name === "Test Newstarter")[0];
+  lm.querySelector("[name=staff_id]").value = ns.id; lm.querySelector("[name=leave_type]").value = "sick";
+  const monday = (() => { let d = new Date(); d.setDate(d.getDate() + 90); while (d.getDay() !== 1) d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
+  lm.querySelector("[name=start_date]").value = monday; lm.querySelector("[name=end_date]").value = monday;
+  submit(app); await sleep(300);
+  ok("hr: record sick leave", (await hrApi().leave.list({ staff_id: ns.id })).some(l => l.leave_type === "sick" && l.status === "approved" && l.days === 1));
+  view(app).querySelector('[data-act="recordleave"]').click(); await sleep(60);
+  lm = modal(app); lm.querySelector("[name=staff_id]").value = ns.id; lm.querySelector("[name=start_date]").value = monday; lm.querySelector("[name=end_date]").value = monday;
+  submit(app); await sleep(200);
+  ok("hr: overlapping leave rejected", /overlap/i.test(modal(app).querySelector(".modal-error").textContent));
+  modal(app).querySelector("[data-close]").click();
+  // photo upload (demo stores data URL)
+  const pf = new app.w.File([new Uint8Array([137, 80, 78, 71])], "me.png", { type: "image/png" });
+  await hrApi().staff.setPhoto({ id: ns.id, practice_id: "p1" }, pf);
+  const withPhoto = (await hrApi().staff.list({ practice_id: "p1" })).filter(x => x.id === ns.id)[0];
+  const urls = await hrApi().photoUrls([withPhoto.photo_path]);
+  ok("hr: photo stored and resolvable", !!withPhoto.photo_path && /^data:/.test(urls[withPhoto.photo_path] || ""));
+  // document + note
+  const df = new app.w.File(["%PDF-1.4 demo"], "contract.pdf", { type: "application/pdf" });
+  await hrApi().docs.add({ practice_id: "p1", staff_id: ns.id, kind: "contract", title: "Contract" }, df);
+  await hrApi().notes.add({ practice_id: "p1", staff_id: ns.id, kind: "general", body: "Welcome" });
+  ok("hr: document and note saved", (await hrApi().docs.list(ns.id)).length === 1 && (await hrApi().notes.list(ns.id)).length === 1);
+  app.dom.window.close();
+
+  // Staff self-service
+  app = await newApp("u_st1");
+  await go(app, "myhr");
+  ok("myhr: balance and details render", /Entitlement/.test(view(app).innerHTML) && /Owen Evans/.test(view(app).innerHTML));
+  ok("myhr: team off list (no leave types shown)", /Who is off in the next 8 weeks/.test(view(app).innerHTML) && !/Sick leave<\/li>/.test(view(app).innerHTML));
+  ok("myhr: staff sees only own HR record", (await hrApi().staff.list({})).length === 1);
+  { const lv = await hrApi().leave.list({}); ok("myhr: staff sees only own leave", lv.length > 0 && lv.every(l => l.staff_id === lv[0].staff_id)); }
+  ok("myhr: staff cannot read HR notes/documents", (await hrApi().notes.list("hs1")).length === 0 && (await hrApi().docs.list("hs3")).length === 0);
+  const own = await hrApi().staff.mine("owen@cardiffbaydental.example", "p1");
+  const before = (await hrApi().leave.list({ staff_id: own.id })).length;
+  view(app).querySelector('[data-act="request"]').click(); await sleep(60);
+  const rd = (() => { let d = new Date(); d.setDate(d.getDate() + 120); while (d.getDay() !== 2) d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10); })();
+  let rm = modal(app); rm.querySelector("[name=start_date]").value = rd; rm.querySelector("[name=end_date]").value = rd;
+  ok("myhr: request form offers no maternity/paternity types", !/Maternity|Paternity/.test(rm.querySelector("[name=leave_type]").innerHTML));
+  submit(app); await sleep(300);
+  const after = await hrApi().leave.list({ staff_id: own.id });
+  ok("myhr: request created as pending", after.length === before + 1 && after.some(l => l.start_date === rd && l.status === "pending"));
+  view(app).querySelector('[data-act="request"]').click(); await sleep(60);
+  rm = modal(app); const far = (() => { let d = new Date(); d.setDate(d.getDate() + 200); return d.toISOString().slice(0, 10); })();
+  const far2 = (() => { let d = new Date(); d.setDate(d.getDate() + 260); return d.toISOString().slice(0, 10); })();
+  rm.querySelector("[name=start_date]").value = far; rm.querySelector("[name=end_date]").value = far2; submit(app); await sleep(200);
+  ok("myhr: cannot request more annual leave than remaining", /only have/i.test(modal(app).querySelector(".modal-error").textContent));
+  modal(app).querySelector("[data-close]").click();
+  const cancelBtn = [...view(app).querySelectorAll('[data-act="cancel"]')][0];
+  ok("myhr: can cancel own pending request", !!cancelBtn);
+  cancelBtn.click(); await sleep(60); modal(app).querySelector('button[type="submit"]').click(); modal(app) && submit(app); await sleep(250);
+  ok("myhr: cancelled request status", (await hrApi().leave.list({ staff_id: own.id })).some(l => l.status === "cancelled"));
+  const sdeny = await hrApi().leave.update(after.filter(l => l.status === "pending")[0] ? after.filter(l => l.status === "pending")[0].id : "x", { status: "approved" }).then(() => "allowed", () => "denied");
+  ok("myhr: staff cannot approve leave", sdeny === "denied");
+  ok("myhr: staff has no HR management route", !app.doc.querySelector('#side-nav [data-route="hr"]'));
+  app.dom.window.close();
+
+  // Group HR (read-only) + audit
+  app = await newApp("u_ga");
+  await go(app, "hrgroup");
+  ok("hrgroup: roll-up has a row per practice", view(app).querySelectorAll("table.data tbody tr").length === 3, String(view(app).querySelectorAll("table.data tbody tr").length));
+  ok("hrgroup: directory lists staff across sites", /Callum Reid/.test(view(app).innerHTML) && /Gethin Morris/.test(view(app).innerHTML) && !/Emyr Hughes/.test(view(app).innerHTML));
+  view(app).querySelector('#g-list [data-act="open"]').click(); await sleep(250);
+  ok("hrgroup: group admin sees full record but no edit actions", !!modal(app) && !modal(app).querySelector('[data-act="edit"]') && !modal(app).querySelector('[data-act="recordleave"]'));
+  ok("hrgroup: full leave detail visible", /Sick leave|Annual leave|Maternity/.test(modal(app).innerHTML));
+  modal(app).querySelector("[data-close]").click();
+  const gaud = await app.w.CC.api.audit.list({});
+  ok("hrgroup: record view audited", gaud.some(a => a.action === "view_hr_record"));
+  ok("hrgroup: cannot create staff or leave", await app.w.CC.api.hr.staff.create({ practice_id: "p1", full_name: "x" }).then(() => false, () => true));
+  ok("hrgroup: cannot decide leave", await app.w.CC.api.hr.leave.update("x", { status: "approved" }).then(() => false, () => true));
+  view(app).querySelector('[data-act="site"]').click(); await sleep(250);
+  ok("hrgroup: open site HR is read-only", /read-only/.test(view(app).innerHTML) && !view(app).querySelector('[data-act="addstaff"]'));
+  ok("hrgroup: no approve buttons for group admin", !view(app).querySelector('[data-act="approve"]'));
+  app.dom.window.close();
+
+  // Isolation
+  app = await newApp("u_pr4");
+  await go(app, "hr");
+  ok("hr: independent practice sees only its own staff", /Nia Parry/.test(view(app).innerHTML) && !/Owen Evans|Callum Reid/.test(view(app).innerHTML));
+  ok("hr: inspector has no HR", !(await newApp("u_insp")).doc.querySelector('#side-nav [data-route^="hr"], #side-nav [data-route="myhr"]'));
+  app.dom.window.close();
+  app = await newApp("u_pr1", "cy");
+  await go(app, "myhr");
+  ok("hr: Welsh strings render", /Fy Adnoddau Dynol|Ceisiadau|Hawl/.test(view(app).innerHTML) || /Mae eich cofnod|Nid yw eich cofnod/.test(view(app).innerHTML), view(app).innerHTML.slice(0, 200));
+  await go(app, "hr"); ok("hr: Welsh people tab", /Adnoddau Dynol/.test(view(app).innerHTML));
   app.dom.window.close();
 
   // Language toggle + settings + MFA demo

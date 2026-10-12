@@ -219,6 +219,72 @@
         revoke: function (id) { return sb.from("inspector_grants").update({ revoked: true }).eq("id", id).then(ok); }
       },
 
+      /* ---------- HR (staff records, leave, documents, notes) ---------- */
+      hr: {
+        staff: {
+          list: function (f) {
+            var q = sb.from("hr_staff").select("*").order("full_name");
+            if (f && f.practice_id) q = q.eq("practice_id", f.practice_id);
+            return q.then(ok);
+          },
+          mine: function (email, practiceId) {
+            if (!email) return Promise.resolve(null);
+            var q = sb.from("hr_staff").select("*").ilike("email", String(email).replace(/[%_]/g, "\\$&")).eq("active", true);
+            if (practiceId) q = q.eq("practice_id", practiceId);
+            return q.limit(1).then(ok).then(function (r) { return r[0] || null; });
+          },
+          create: function (row) { return sb.from("hr_staff").insert(row).select().single().then(ok); },
+          update: function (id, patch) { return sb.from("hr_staff").update(patch).eq("id", id).select().single().then(ok); },
+          setPhoto: function (staff, file) {
+            var path = staff.practice_id + "/" + staff.id + "/photo-" + Date.now() + ".jpg";
+            return sb.storage.from("hr").upload(path, file, { contentType: file.type || "image/jpeg", upsert: false }).then(function (r) {
+              if (r.error) throw new Error(r.error.message);
+              return sb.from("hr_staff").update({ photo_path: path }).eq("id", staff.id).then(ok);
+            }).then(function () { return path; });
+          }
+        },
+        photoUrls: function (paths) {
+          paths = (paths || []).filter(Boolean);
+          if (!paths.length) return Promise.resolve({});
+          return sb.storage.from("hr").createSignedUrls(paths, 3600).then(function (r) {
+            var m = {}; (r.data || []).forEach(function (x) { if (x.signedUrl) m[x.path] = x.signedUrl; }); return m;
+          });
+        },
+        leave: {
+          list: function (f) {
+            var q = sb.from("hr_leave").select("*").order("start_date", { ascending: false }).limit(2000);
+            if (f && f.practice_id) q = q.eq("practice_id", f.practice_id);
+            if (f && f.staff_id) q = q.eq("staff_id", f.staff_id);
+            return q.then(ok);
+          },
+          create: function (row) { return sb.from("hr_leave").insert(row).select().single().then(ok); },
+          update: function (id, patch) { return sb.from("hr_leave").update(patch).eq("id", id).select().single().then(ok); }
+        },
+        whosOff: function (pid, from, to) { return sb.rpc("hr_whos_off", { p_practice: pid, p_from: from, p_to: to }).then(ok); },
+        docs: {
+          list: function (staffId) { return sb.from("hr_documents").select("*").eq("staff_id", staffId).order("created_at", { ascending: false }).then(ok); },
+          add: function (row, file) {
+            var path = row.practice_id + "/" + row.staff_id + "/" + CC.uuid() + "-" + safeName(file.name);
+            return sb.storage.from("hr").upload(path, file, { contentType: file.type || undefined, upsert: false }).then(function (r) {
+              if (r.error) throw new Error(r.error.message);
+              return sb.from("hr_documents").insert(Object.assign({}, row, { file_path: path, file_name: file.name })).select().single().then(ok);
+            });
+          },
+          remove: function (doc) {
+            return sb.from("hr_documents").delete().eq("id", doc.id).then(ok).then(function () {
+              return sb.storage.from("hr").remove([doc.file_path]).then(function () {}, function () {});
+            });
+          },
+          url: function (path) {
+            return sb.storage.from("hr").createSignedUrl(path, 120).then(function (r) { if (r.error) throw new Error(r.error.message); return r.data.signedUrl; });
+          }
+        },
+        notes: {
+          list: function (staffId) { return sb.from("hr_notes").select("*").eq("staff_id", staffId).order("note_date", { ascending: false }).then(ok); },
+          add: function (row) { return sb.from("hr_notes").insert(row).select().single().then(ok); }
+        }
+      },
+
       /* ---------- audit & enquiries ---------- */
       audit: {
         log: function (action, entity, entityId, practiceId, detail) {

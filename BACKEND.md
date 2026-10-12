@@ -19,6 +19,9 @@ There is no server of your own to run. With no configuration it runs in **demo m
 | Inspection view | Inspector | read-only, organised by HIW category; every file opened is logged |
 | Audit log | Principal, PM, Group Admin, admin | who viewed/changed what; cannot be edited or deleted; CSV export |
 | Admin | you (platform admin) | invite/edit/deactivate users, groups & practices, website enquiries |
+| HR (site) | Principal, Practice Manager | staff directory with photos, leave requests and approval, calendar, absence (sickness, Bradford factor), documents, notes, GDC/indemnity/DBS expiry alerts |
+| My HR | Staff, PM, Principal | own record, leave balance, request leave, who's off |
+| Group HR | Group Admin | read-only roll-up across sites (staffing, off today, absence rate, expiries) and full record detail, every view audited |
 | Security | all | invitation-only sign-up, TOTP two-factor, English/Welsh |
 
 Roles: `platform_admin`, `group_admin`, `principal`, `practice_manager`, `staff`, `inspector`.
@@ -27,7 +30,7 @@ Access is **invitation-only**: the database rejects sign-ups for emails that hav
 ## Go live (about 20 minutes, free)
 
 1. Create a free account at supabase.com → **New project**. **Region: London (eu-west-2)** for UK data residency.
-2. **SQL Editor** → paste and run `supabase/01_schema.sql`, then `supabase/02_seed.sql`.
+2. **SQL Editor** → paste and run `supabase/01_schema.sql`, then `supabase/02_seed.sql`, then `supabase/03_hr.sql` (the HR module; on an existing project just run 03).
    Before running 01, change the last line's email if the admin email isn't `jonathan.milton.anderson@gmail.com`.
 3. **Project Settings → API**: copy the *Project URL* and the *anon public* key into `js/site-config.js`.
    Never use the `service_role` key anywhere in this site.
@@ -37,6 +40,15 @@ Access is **invitation-only**: the database rejects sign-ups for emails that hav
 6. Optional: **Authentication → Providers → Email**: set minimum password length 10 and leave "Confirm email" on.
 
 Website enquiries (demo / interest / waitlist forms) are saved to the `enquiries` table once step 3 is done; you read them in **Enquiries**. Without it they fall back to opening the visitor's email client.
+
+## HR module notes
+
+- **Staff are matched to their login by email.** Add a staff record with the same email the person signs in with and they automatically see their own leave under *My HR*.
+- **Who sees what:** managers (Principal / Practice Manager) of the site: everything. Group Admin: everything for their group's sites, **read-only**, and each record opened is written to the audit log. Staff: their own record and leave only; colleagues see only *names and dates* of who is off, never the type (so sickness/maternity stay private). Inspectors: none.
+- **Leave rules built in:** weekends and England/Wales bank holidays are not counted (list in `portal/js/hr-core.js`, update each year); half days; overlap check; staff cannot request more annual leave than remains; family leave (maternity, paternity, adoption, shared parental) is recorded by the manager.
+- **Sensitive data:** sickness, maternity and HR notes are health/special-category data under UK GDPR. Before real use you will need a privacy notice for staff, a lawful basis and retention policy, and (given the sensitivity) a short DPIA. HR notes are insert-only (they cannot be edited later); documents can be deleted by managers.
+- **Files:** photos and documents live in a private `hr` storage bucket, path `<practice>/<staff>/<file>`, 10 MB limit; photos are resized in the browser to 480 px.
+- **Not included:** payroll, rotas/shift planning, part-time pro-rata of bank holidays, carry-over of unused leave, public holiday rules for Scotland/NI.
 
 ## Things to know
 
@@ -53,8 +65,8 @@ Website enquiries (demo / interest / waitlist forms) are saved to the `enquiries
 
 ## How it was tested
 
-- `supabase/tests/rls_test.py` — 76 checks run against a real PostgreSQL server: invitation gating, every role's read/write limits, group isolation, inspector grant expiry/revocation, audit immutability. (Run it by stubbing Supabase's `auth`/`storage` schemas, see `stubs.sql`.)
-- `portal/tests/smoke.js` — 240 checks in a simulated browser: every role × every page in English and Welsh, plus real flows (assessment → gap report, verify, invite, grant, book, bulk book, permission denials).
+- `supabase/tests/rls_test.py` — 127 checks (includes the HR rules: staff isolation, group admin read-only, leave approval guards, who's-off privacy, HR file access) run against a real PostgreSQL server: invitation gating, every role's read/write limits, group isolation, inspector grant expiry/revocation, audit immutability. (Run it by stubbing Supabase's `auth`/`storage` schemas, see `stubs.sql`.)
+- `portal/tests/smoke.js` — 320 checks in a simulated browser: every role × every page in English and Welsh, plus real flows (assessment → gap report, verify, invite, grant, book, bulk book, permission denials).
 - The live Supabase connection itself (auth emails, storage uploads, PostgREST) could not be exercised from the build environment. Do a first-run pass yourself: sign up, upload a file, invite a Principal, sign in as them.
 
 ## Folder map
@@ -62,10 +74,11 @@ Website enquiries (demo / interest / waitlist forms) are saved to the `enquiries
 ```
 supabase/01_schema.sql   tables, security rules (RLS), storage policies, RPCs
 supabase/02_seed.sql     self-assessment questions, training modules (EN/CY)
+supabase/03_hr.sql       HR module: staff, leave, documents, notes, who's-off, hr storage bucket
 supabase/tests/          database permission tests
 portal/app.html          the portal
 portal/js/api-supabase.js  live data layer        portal/js/api-demo.js  demo data layer
-portal/js/views-*.js     screens                  portal/js/i18n.js      Welsh strings
+portal/js/views-*.js     screens (views-hr.js = HR)                  portal/js/i18n.js      Welsh strings
 js/site-config.js        <- paste Supabase URL + anon key here
 ```
 

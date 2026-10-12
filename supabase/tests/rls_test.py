@@ -147,6 +147,78 @@ _,err = as_user(pr2,"insert into assessment_answers values(%s,1,'no')",(aid,)); 
 as_user(pr1,"update assessments set status='completed',completed_at=now(),score=90 where id=%s",(aid,))
 r,_ = as_user(pr1,"select practice_inputs(%s) as x",(p1,)); check("completed assessment appears in inputs", r[0]["x"]["assessment"] is not None and len(r[0]["x"]["assessment"]["answers"])==4)
 
+
+print("== HR module")
+staff1b = signup("staff1b@x.com")
+h1,err = as_user(pr1,"insert into hr_staff(practice_id,full_name,job_title,email) values(%s,'Staff One','Dental nurse','staff1@x.com') returning id",(p1,)); check("principal creates staff record", err is None); h1=h1[0]["id"]
+h2,err = as_user(pm1,"insert into hr_staff(practice_id,full_name,job_title,email) values(%s,'Staff Two','Receptionist','staff1b@x.com') returning id",(p1,)); check("practice manager creates staff record", err is None); h2=h2[0]["id"]
+h3,err = as_user(pr2,"insert into hr_staff(practice_id,full_name,email) values(%s,'Other Site','o@x.com') returning id",(p2,)); h3=h3[0]["id"]
+_,err = as_user(pr1,"insert into hr_staff(practice_id,full_name) values(%s,'Sneaky')",(p2,)); check("principal cannot add staff record to another practice", err is not None)
+_,err = as_user(staff1,"insert into hr_staff(practice_id,full_name) values(%s,'Self-made')",(p1,)); check("staff cannot create staff records", err is not None)
+rows,_ = as_user(staff1,"select id from hr_staff"); check("staff sees only own HR record", len(rows)==1 and str(rows[0]["id"])==h1)
+_,err = as_user(staff1,"update hr_staff set annual_leave_days=99 where id=%s",(h1,))
+check("staff cannot edit own HR record", su("select annual_leave_days from hr_staff where id=%s",(h1,))[0]["annual_leave_days"]==28)
+rows,_ = as_user(pr2,"select id from hr_staff where practice_id=%s",(p1,)); check("other practice cannot read HR records", len(rows)==0)
+rows,_ = as_user(ga,"select id from hr_staff"); check("group admin reads HR across the group", len(rows)>=2 and all(str(r["id"]) in (h1,h2,h3) for r in rows))
+_,err = as_user(ga,"update hr_staff set job_title='x' where id=%s",(h1,)); check("group admin cannot edit HR records", su("select job_title from hr_staff where id=%s",(h1,))[0]["job_title"]=="Dental nurse")
+_,err = as_user(ga,"insert into hr_staff(practice_id,full_name) values(%s,'GA add')",(p1,)); check("group admin cannot create HR records", err is not None)
+rows,_ = as_user(insp,"select id from hr_staff"); check("inspector cannot read HR", len(rows)==0)
+rows,_ = as_user(pr3,"select id from hr_staff"); check("independent practice sees none of the group's HR", len(rows)==0)
+
+print("== HR leave")
+l1,err = as_user(staff1,"insert into hr_leave(practice_id,staff_id,leave_type,start_date,end_date,days) values(%s,%s,'annual',current_date+30,current_date+34,5) returning id",(p1,h1)); check("staff requests leave", err is None); l1=l1[0]["id"]
+check("new request is pending and requested_by set", su("select status,requested_by from hr_leave where id=%s",(l1,))[0]["status"]=="pending")
+_,err = as_user(staff1,"insert into hr_leave(practice_id,staff_id,leave_type,start_date,end_date,days,status) values(%s,%s,'annual',current_date+60,current_date+61,2,'approved')",(p1,h1)); check("staff cannot self-approve on insert", err is not None)
+_,err = as_user(staff1,"insert into hr_leave(practice_id,staff_id,leave_type,start_date,end_date,days) values(%s,%s,'annual',current_date+60,current_date+61,2)",(p1,h2)); check("staff cannot request leave for a colleague", err is not None)
+_,err = as_user(staff1,"update hr_leave set status='approved' where id=%s",(l1,)); check("staff cannot approve own leave", su("select status from hr_leave where id=%s",(l1,))[0]["status"]=="pending")
+_,err = as_user(staff1,"update hr_leave set days=1, end_date=start_date where id=%s",(l1,)); check("staff cannot change dates/days of a request", err is not None)
+rows,_ = as_user(staff1b,"select id from hr_leave"); check("colleague cannot see another person's leave", len(rows)==0)
+_,err = as_user(pm1,"update hr_leave set status='approved', manager_note='Enjoy' where id=%s",(l1,)); r=su("select status,decided_by from hr_leave where id=%s",(l1,))[0]
+check("practice manager approves leave (decided_by set)", err is None and r["status"]=="approved" and str(r["decided_by"])==pm1)
+_,err = as_user(staff1,"update hr_leave set status='cancelled' where id=%s",(l1,)); check("staff cannot cancel once approved", su("select status from hr_leave where id=%s",(l1,))[0]["status"]=="approved")
+l2,_ = as_user(staff1,"insert into hr_leave(practice_id,staff_id,leave_type,start_date,end_date,days) values(%s,%s,'study',current_date+70,current_date+70,1) returning id",(p1,h1)); l2=l2[0]["id"]
+_,err = as_user(staff1,"update hr_leave set status='cancelled' where id=%s",(l2,)); check("staff can cancel own pending request", su("select status from hr_leave where id=%s",(l2,))[0]["status"]=="cancelled")
+sk,err = as_user(pr1,"insert into hr_leave(practice_id,staff_id,leave_type,start_date,end_date,days,status,reason) values(%s,%s,'sick',current_date-3,current_date-2,2,'approved','Flu') returning id",(p1,h2)); check("manager records sickness directly", err is None)
+mt,err = as_user(pr1,"insert into hr_leave(practice_id,staff_id,leave_type,start_date,end_date,days,status) values(%s,%s,'maternity',current_date,current_date+180,130,'approved') returning id",(p1,h2)); check("manager records maternity leave", err is None)
+_,err = as_user(pr1,"insert into hr_leave(practice_id,staff_id,leave_type,start_date,end_date,days) values(%s,%s,'annual',current_date,current_date+1,2)",(p2,h2)); check("leave must match the staff member's practice", err is not None)
+_,err = as_user(pr2,"update hr_leave set status='declined' where id=%s",(l1,)); check("other practice cannot decide leave", su("select status from hr_leave where id=%s",(l1,))[0]["status"]=="approved")
+rows,_ = as_user(staff1b,"select id from hr_leave"); check("staff sees own sickness/maternity rows", len(rows)==2)
+rows,_ = as_user(ga,"select leave_type from hr_leave"); check("group admin sees all leave incl. sick and maternity (full detail)", {"annual","sick","maternity"}<=set(r["leave_type"] for r in rows))
+_,err = as_user(ga,"update hr_leave set status='declined' where id=%s",(l1,)); check("group admin cannot decide leave", su("select status from hr_leave where id=%s",(l1,))[0]["status"]=="approved")
+_,err = as_user(pr1,"delete from hr_leave where id=%s",(l1,)); check("leave cannot be deleted", su("select count(*) c from hr_leave where id=%s",(l1,))[0]["c"]==1)
+
+print("== HR who's off")
+r,err = as_user(staff1,"select * from hr_whos_off(%s,current_date,current_date+200)",(p1,)); check("staff sees who is off (names and dates only)", err is None and len(r)>=2 and set(r[0].keys())=={"staff_id","full_name","start_date","end_date","half_day"})
+_,err = as_user(pr2,"select * from hr_whos_off(%s,current_date,current_date+10)",(p1,)); check("other practice cannot call who's off", err is not None)
+r,err = as_user(ga,"select * from hr_whos_off(%s,current_date,current_date+10)",(p1,)); check("group admin can call who's off for group practice", err is None)
+_,err = as_user(insp,"select * from hr_whos_off(%s,current_date,current_date+10)",(p1,)); check("inspector cannot call who's off", err is not None)
+
+print("== HR documents and notes")
+_,err = as_user(pr1,"insert into hr_documents(practice_id,staff_id,kind,title,file_path) values(%s,%s,'contract','Contract',%s)",(p1,h1,f"{p1}/{h1}/c.pdf")); check("principal adds HR document", err is None)
+_,err = as_user(pr1,"insert into hr_notes(practice_id,staff_id,kind,body) values(%s,%s,'appraisal','Good year')",(p1,h1)); check("principal adds HR note", err is None)
+rows,_ = as_user(staff1,"select id from hr_documents"); r2,_ = as_user(staff1,"select id from hr_notes"); check("staff cannot read HR documents or notes", len(rows)==0 and len(r2)==0)
+rows,_ = as_user(ga,"select id from hr_documents"); r2,_ = as_user(ga,"select id from hr_notes"); check("group admin reads HR documents and notes", len(rows)==1 and len(r2)==1)
+_,err = as_user(ga,"insert into hr_notes(practice_id,staff_id,body) values(%s,%s,'x')",(p1,h1)); check("group admin cannot add notes", err is not None)
+_,err = as_user(pr1,"update hr_notes set body='edited'"); check("HR notes cannot be edited", su("select count(*) c from hr_notes where body='edited'")[0]["c"]==0)
+_,err = as_user(pr1,"insert into hr_notes(practice_id,staff_id,body) values(%s,%s,'x')",(p1,h3)); check("note must match the staff member's practice", err is not None)
+rows,_ = as_user(pr2,"select id from hr_documents"); check("other practice cannot read HR documents", len(rows)==0)
+
+print("== HR storage")
+su("insert into storage.objects(bucket_id,name,owner) values('hr',%s,%s),('hr',%s,%s)",(f"{p1}/{h1}/photo.jpg",pr1,f"{p1}/{h2}/photo.jpg",pm1))
+rows,_ = as_user(pr1,"select name from storage.objects where bucket_id='hr'"); check("manager reads HR files of own practice", len(rows)==2)
+rows,_ = as_user(staff1,"select name from storage.objects where bucket_id='hr'"); check("staff reads only their own HR files", len(rows)==1 and h1 in rows[0]["name"])
+rows,_ = as_user(ga,"select name from storage.objects where bucket_id='hr'"); check("group admin reads HR files in group", len(rows)==2)
+rows,_ = as_user(pr2,"select name from storage.objects where bucket_id='hr'"); check("other practice cannot read HR files", len(rows)==0)
+rows,_ = as_user(insp,"select name from storage.objects where bucket_id='hr'"); check("inspector cannot read HR files", len(rows)==0)
+_,err = as_user(staff1,"insert into storage.objects(bucket_id,name,owner) values('hr',%s,%s)",(f"{p1}/{h1}/self.jpg",staff1)); check("staff cannot upload HR files", err is not None)
+_,err = as_user(pr1,"insert into storage.objects(bucket_id,name,owner) values('hr',%s,%s)",(f"{p1}/{h1}/new.jpg",pr1)); check("manager can upload HR files", err is None)
+_,err = as_user(pr1,"insert into storage.objects(bucket_id,name,owner) values('hr',%s,%s)",(f"{p2}/{h3}/new.jpg",pr1)); check("manager cannot upload into another practice", err is not None)
+
+print("== HR deactivated user")
+as_user(pr1,"select team_set_active(%s,false)",(staff1,))
+rows,_ = as_user(staff1,"select id from hr_staff"); r2,_ = as_user(staff1,"select id from hr_leave"); check("deactivated user loses HR access", len(rows)==0 and len(r2)==0)
+as_user(pr1,"select team_set_active(%s,true)",(staff1,))
+
 print("== Team management RPCs")
 _,err = as_user(pr1,"select team_set_active(%s,false)",(staff1,)); check("principal can deactivate staff", err is None)
 rows,_ = as_user(staff1,"select * from practices"); rows2,_ = as_user(staff1,"select * from training_assignments"); r3,e3 = as_user(staff1,"select practice_inputs(%s) as x",(p1,)); check("deactivated user loses all data access", len(rows)==0 and len(rows2)==0 and e3 is not None)

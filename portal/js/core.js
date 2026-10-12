@@ -131,7 +131,7 @@
       var btn = form.querySelector('button[type="submit"]');
       if (btn) btn.disabled = true;
       errBox.hidden = true;
-      Promise.resolve(opts.onSubmit(data, { close: close, form: form })).then(function (r) {
+      Promise.resolve().then(function () { return opts.onSubmit(data, { close: close, form: form }); }).then(function (r) {
         if (r !== false) close();
       }).catch(function (err) {
         errBox.textContent = err && err.message ? err.message : String(err);
