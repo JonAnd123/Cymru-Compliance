@@ -114,29 +114,65 @@
     });
   }
 
-  // Builds a mailto: link from a form's fields so the site can capture
-  // enquiries with zero backend / zero cost. See README for upgrading to
-  // a hosted form service (Formspree, Netlify Forms, etc.) later.
-  function initMailtoForm(formId, toAddress, subjectFn) {
+  // ---- Enquiry forms --------------------------------------------------------
+  // When Supabase is configured (js/site-config.js) enquiries are saved to the
+  // `enquiries` table and appear in the portal's admin area. Otherwise (or if the
+  // request fails) we fall back to opening the visitor's email client.
+  var CONTACT_EMAIL = "jonathan.milton.anderson@gmail.com";
+
+  function backendConfigured() {
+    var c = window.CC_CONFIG || {};
+    return !!(c.SUPABASE_URL && c.SUPABASE_ANON_KEY);
+  }
+
+  function postEnquiry(row) {
+    var c = window.CC_CONFIG;
+    return fetch(c.SUPABASE_URL.replace(/\/$/, "") + "/rest/v1/enquiries", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: c.SUPABASE_ANON_KEY,
+        Authorization: "Bearer " + c.SUPABASE_ANON_KEY,
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify(row)
+    }).then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); });
+  }
+
+  function mailtoFallback(form, subject) {
+    var data = new FormData(form), lines = [];
+    data.forEach(function (value, key) {
+      if (key === "website" || !value) return;
+      var field = form.querySelector('[name="' + key + '"]');
+      var label = field && field.closest(".field") ? field.closest(".field").querySelector("label") : null;
+      lines.push((label ? label.textContent.trim() : key) + ": " + value);
+    });
+    window.location.href = "mailto:" + CONTACT_EMAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(lines.join("\n"));
+  }
+
+  function showResult(form, sentOk) {
+    var wrap = form.parentElement;
+    var sent = wrap.querySelector(".form-sent"), fallback = wrap.querySelector(".form-success");
+    if (sentOk && sent) sent.classList.add("show"); else if (fallback) fallback.classList.add("show");
+    if (sentOk) form.reset();
+  }
+
+  // buildRow(data) -> row for the enquiries table; subject(row) -> email subject
+  function initEnquiryForm(formId, buildRow, subjectFn) {
     var form = document.getElementById(formId);
     if (!form) return;
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var data = new FormData(form);
-      var lines = [];
-      data.forEach(function (value, key) {
-        var field = form.querySelector('[name="' + key + '"]');
-        var label = field && field.closest(".field") ? field.closest(".field").querySelector("label") : null;
-        var labelText = label ? label.textContent.trim() : key;
-        if (value) lines.push(labelText + ": " + value);
-      });
-      var subject = typeof subjectFn === "function" ? subjectFn(data) : "New enquiry — Cymru Compliance";
-      var body = lines.join("\n");
-      var mailto = "mailto:" + toAddress + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      window.location.href = mailto;
-
-      var success = form.parentElement.querySelector(".form-success");
-      if (success) success.classList.add("show");
+      if (data.get("website")) { showResult(form, true); return; } // honeypot: bots only
+      var row = buildRow(data);
+      row.language = currentLang();
+      var btn = form.querySelector('button[type="submit"]');
+      if (!backendConfigured()) { mailtoFallback(form, subjectFn(row)); showResult(form, false); return; }
+      if (btn) btn.disabled = true;
+      postEnquiry(row).then(function () { showResult(form, true); }).catch(function () {
+        mailtoFallback(form, subjectFn(row)); showResult(form, false);
+      }).then(function () { if (btn) btn.disabled = false; });
     });
   }
 
@@ -163,12 +199,27 @@
     initFooterYear();
     initPathToggle();
 
-    initMailtoForm("contact-form", "jonathan.milton.anderson@gmail.com", function (data) {
-      var path = data.get("enquiry-type") || "General enquiry";
-      return "Cymru Compliance enquiry (" + path + ")";
-    });
-    initMailtoForm("waitlist-form", "jonathan.milton.anderson@gmail.com", function () {
-      return "Cymru Compliance portal — waitlist signup";
-    });
+    initEnquiryForm("contact-form", function (d) {
+      var num = parseInt(d.get("Number of practices"), 10);
+      return {
+        kind: d.get("enquiry-type") || "general",
+        practice_type: d.get("practice-type") || null,
+        name: (d.get("Name") || "").trim(),
+        email: (d.get("Email") || "").trim(),
+        practice_name: d.get("Practice or group name") || null,
+        sites: isNaN(num) ? null : num,
+        message: d.get("Message") || null
+      };
+    }, function (row) { return "Cymru Compliance enquiry (" + row.kind + " — " + (row.practice_type || "") + ")"; });
+
+    initEnquiryForm("waitlist-form", function (d) {
+      return {
+        kind: "waitlist",
+        name: (d.get("Name") || "").trim(),
+        email: (d.get("Email") || "").trim(),
+        practice_name: d.get("Practice or group name") || null,
+        role: d.get("Role") || null
+      };
+    }, function () { return "Cymru Compliance portal — access request"; });
   });
 })();

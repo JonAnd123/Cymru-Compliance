@@ -369,21 +369,25 @@ var CY_I18N = {
     "contact-placeholder-message": "Dywedwch ychydig wrthym am eich practis neu grŵp",
     "contact-consent": "Rwy'n hapus cael fy nghysylltu ynghylch Cymru Compliance. Gweler ein polisi preifatrwydd am sut rydym yn trin eich data.",
     "contact-submit": "Anfon ymholiad",
+    "contact-sent": "Diolch — rydym wedi derbyn eich neges a byddwn mewn cysylltiad o fewn un diwrnod gwaith.",
     "contact-success": "Diolch — dylai eich rhaglen e-bost fod wedi agor gyda'ch ymholiad yn barod i'w anfon. Os na wnaeth ddim agor, e-bostiwch ni'n uniongyrchol yn jonathan.milton.anderson@gmail.com."
   },
   portal: {
     "portal-eyebrow": "Porth cleientiaid",
-    "portal-title": "Mae eich porth cydymffurfiaeth ar y ffordd",
-    "portal-body": "Un mewngofnodiad ar gyfer eich dangosfwrdd, tystiolaeth, hyfforddiant ac archebion — gyda'r golwg gywir i bob rôl. Ymunwch â'r rhestr aros a byddwn yn e-bostio wrth i'ch practis neu grŵp allu mewngofnodi.",
+    "portal-title": "Eich porth cydymffurfiaeth",
+    "portal-body": "Un mewngofnodiad ar gyfer eich dangosfwrdd, tystiolaeth, hyfforddiant ac archebion — gyda'r golwg gywir i bob rôl. Mewngofnodwch os oes gennych gyfrif, neu gofynnwch am fynediad a byddwn mewn cysylltiad.",
     "portal-role-1": "Gweinyddwr Grŵp",
     "portal-role-2": "Prif Ddeintydd",
     "portal-role-3": "Staff",
     "portal-role-4": "Arolygydd (darllen-yn-unig)",
-    "portal-admin-note": "Mae ardal weinyddu ar gyfer rheoli mewngofnodion practis a grŵp wedi'i chynllunio ar gyfer rhyddhad yn y dyfodol, unwaith y bydd y porth yn agor.",
+    "portal-admin-note": "Mae cyfrifon trwy wahoddiad yn unig. Eich Prif Ddeintydd, eich Gweinyddwr Grŵp neu dîm Cymru Compliance sy'n rheoli mewngofnodion practis a grŵp.",
 
-    "portal-badge": "Yn dod cyn hir",
-    "portal-form-title": "Ymunwch â'r rhestr aros",
-    "portal-form-sub": "Byddwch y cyntaf i wybod pan fydd mewngofnodion yn agor ar gyfer eich rôl.",
+    "portal-signin-title": "Oes gennych gyfrif eisoes?",
+    "portal-signin-btn": "Mewngofnodi i'r porth",
+    "portal-sent": "Diolch — rydym wedi derbyn eich cais a byddwn mewn cysylltiad yn fuan.",
+    "portal-badge": "Trwy wahoddiad yn unig",
+    "portal-form-title": "Gofyn am fynediad",
+    "portal-form-sub": "Dywedwch wrthym pwy ydych chi a byddwn yn eich sefydlu.",
 
     "portal-label-name": "Enw llawn",
     "portal-label-email": "E-bost",
@@ -394,7 +398,7 @@ var CY_I18N = {
     "portal-role-opt-3": "Rheolwr Practis",
     "portal-role-opt-4": "Aelod o staff",
     "portal-role-opt-5": "Arall",
-    "portal-submit": "Ymuno â'r rhestr aros",
+    "portal-submit": "Gofyn am fynediad",
     "portal-success": "Diolch — dylai eich rhaglen e-bost fod wedi agor gyda'ch manylion yn barod i'w hanfon. Os na wnaeth ddim agor, e-bostiwch ni'n uniongyrchol yn jonathan.milton.anderson@gmail.com.",
     "portal-footnote": "Eisoes wedi siarad â ni am arddangosiad? <a href=\"contact.html\">Cysylltwch â ni</a> yn lle hynny."
   }

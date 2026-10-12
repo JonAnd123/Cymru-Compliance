@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Portal — Cymru Compliance (coming soon)</title>
-<meta name="description" content="The Cymru Compliance client portal is coming soon. Join the waitlist to be first to know when Group Admin, Principal, Staff and Inspector logins open.">
+<title>Portal — Cymru Compliance</title>
+<meta name="description" content="Sign in to the Cymru Compliance client portal, or request access for your practice or group.">
 <link rel="icon" href="img/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
 <link rel="stylesheet" href="css/style.css">
@@ -21,7 +21,7 @@
       <a href="pricing.html" data-i18n="nav-pricing">Pricing</a>
       <a href="hiw-guide.html" data-i18n="nav-hiw">HIW Guide</a>
       <a href="contact.html" data-i18n="nav-contact">Contact</a>
-      <a href="portal.html" data-i18n="nav-portal">Portal Login</a>
+      <a href="portal/app.html" data-i18n="nav-portal">Portal Login</a>
     </nav>
     <div class="nav-actions">
       <div class="lang-toggle">
@@ -41,8 +41,8 @@
 
     <div class="portal-side">
       <span class="eyebrow" style="background:rgba(255,255,255,0.14);color:#fff;width:fit-content;" data-i18n="portal-eyebrow">Client portal</span>
-      <h1 style="color:#fff;" data-i18n="portal-title">Your compliance portal is on its way</h1>
-      <p style="color:rgba(255,255,255,0.8);" data-i18n="portal-body">One login for your dashboard, evidence, training and bookings — with the right view for every role. Join the waitlist and we'll email you the moment your practice or group can sign in.</p>
+      <h1 style="color:#fff;" data-i18n="portal-title">Your compliance portal</h1>
+      <p style="color:rgba(255,255,255,0.8);" data-i18n="portal-body">One login for your dashboard, evidence, training and bookings — with the right view for every role. Sign in if you have an account, or request access and we'll be in touch.</p>
       <div style="margin-top:8px;">
         <span class="role-pill" data-i18n="portal-role-1">Group Admin</span>
         <span class="role-pill" data-i18n="portal-role-2">Principal</span>
@@ -50,14 +50,19 @@
         <span class="role-pill" data-i18n="portal-role-4">Inspector (read-only)</span>
       </div>
       <hr class="divider" style="border-color:rgba(255,255,255,0.15);background:rgba(255,255,255,0.15);">
-      <p class="small" style="color:rgba(255,255,255,0.55);" data-i18n="portal-admin-note">An administration area for managing practice and group logins is planned for a future release, once the portal opens.</p>
+      <p class="small" style="color:rgba(255,255,255,0.55);" data-i18n="portal-admin-note">Accounts are by invitation only. Practice and group logins are managed by your Principal, your Group Admin, or the Cymru Compliance team.</p>
     </div>
 
     <div class="portal-main">
       <div class="portal-card">
-        <span class="tag amber" data-i18n="portal-badge">Coming soon</span>
-        <h2 style="margin-top:14px;" data-i18n="portal-form-title">Join the waitlist</h2>
-        <p data-i18n="portal-form-sub">Be first to know when logins open for your role.</p>
+        <h2 data-i18n="portal-signin-title">Already have an account?</h2>
+        <a href="portal/app.html" class="btn btn-primary btn-block btn-lg" data-i18n="portal-signin-btn">Sign in to the portal</a>
+
+        <hr class="divider" style="margin:28px 0;">
+
+        <span class="tag amber" data-i18n="portal-badge">Invitation only</span>
+        <h2 style="margin-top:14px;" data-i18n="portal-form-title">Request access</h2>
+        <p data-i18n="portal-form-sub">Tell us who you are and we'll set you up.</p>
 
         <form id="waitlist-form">
           <div class="field">
@@ -82,8 +87,10 @@
               <option data-i18n="portal-role-opt-5">Other</option>
             </select>
           </div>
-          <button type="submit" class="btn btn-primary btn-block btn-lg" data-i18n="portal-submit">Join the waitlist</button>
+          <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;opacity:0">
+          <button type="submit" class="btn btn-secondary btn-block btn-lg" data-i18n="portal-submit">Request access</button>
         </form>
+        <div class="form-sent" data-i18n="portal-sent">Thanks — we've received your request and will be in touch shortly.</div>
         <div class="form-success" data-i18n="portal-success">Thanks — your email client should have opened with your details ready to send. If nothing opened, email us directly at jonathan.milton.anderson@gmail.com.</div>
 
         <p class="small text-center" style="margin-top:22px;" data-i18n="portal-footnote">Already spoken to us about a demo? <a href="contact.html">Get in touch</a> instead.</p>
@@ -105,7 +112,7 @@
         <ul>
           <li><a href="services.html" data-i18n="footer-services">Services</a></li>
           <li><a href="pricing.html" data-i18n="footer-pricing">Pricing</a></li>
-          <li><a href="portal.html" data-i18n="footer-portal">Portal login</a></li>
+          <li><a href="portal/app.html" data-i18n="footer-portal">Portal login</a></li>
         </ul>
       </div>
       <div>
@@ -131,6 +138,7 @@
   </div>
 </footer>
 
+<script src="js/site-config.js"></script>
 <script src="js/translations.js"></script>
 <script src="js/main.js"></script>
 </body>

@@ -546,7 +546,7 @@ table.simple-table tr:last-child td { border-bottom: none; }
 .checkbox-field { display: flex; align-items: flex-start; gap: 10px; }
 .checkbox-field input { width: auto; margin-top: 4px; }
 
-.form-success {
+.form-success, .form-sent {
   display: none;
   background: var(--status-green-bg);
   border: 1px solid var(--status-green);
@@ -556,7 +556,7 @@ table.simple-table tr:last-child td { border-bottom: none; }
   font-size: 0.9rem;
   margin-top: 16px;
 }
-.form-success.show { display: block; }
+.form-success.show, .form-sent.show { display: block; }
 
 /* ---- Footer ---- */
 .site-footer {

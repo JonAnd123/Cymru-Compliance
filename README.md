@@ -73,22 +73,9 @@ translation unit / a freelance cyfieithydd) to check `js/translations.js`
 before this goes live publicly. The English in the HTML files is the source
 of truth; Welsh only needs sign-off on that one file.
 
-## 4. What's deliberately NOT built yet
+## 4. The portal and backend
 
-Per your brief, the actual logged-in compliance portal (dashboards, uploads,
-training, role-based logins) and its future admin section for managing
-practice/group accounts are **not** part of this build — `portal.html` is a
-"coming soon" waitlist page only. When you're ready to build the real
-portal:
-
-- It'll need a backend/auth provider (e.g. Supabase, Auth0, AWS Cognito, or
-  a custom build) — none of that is free at meaningful scale, unlike this
-  marketing site.
-- The four access tiers (Group Admin, Principal, Staff, Inspector) and the
-  admin area for managing logins are specified in PRD Sections 6–7 — worth
-  re-reading those before scoping that build.
-- Keep the same visual language (`css/style.css`) so the portal feels like
-  one product with this site.
+The logged-in portal (dashboard, evidence, training, self-assessment, groups, inspector access, admin) is built and runs in demo mode out of the box. See **BACKEND.md** for connecting it to Supabase and for known limitations.
 
 ## 5. Editing content later
 

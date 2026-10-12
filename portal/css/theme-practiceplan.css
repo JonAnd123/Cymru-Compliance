@@ -1,0 +1,74 @@
+/* Practice Plan white-label theme (black & gold) for portal/practiceplan.html.
+   Gold values are approximate — swap in Practice Plan's exact brand hex codes if you have them.
+   Use 6-digit hex only (charts read these values). Logo: portal/brand/practiceplan-logo.png */
+:root {
+  --navy-900: #0d0d0d;   /* black: sidebar, headings */
+  --navy-800: #1a1a1a;
+  --navy-700: #262626;
+  --blue-600: #e6b422;   /* main gold (darkened so text/links stay readable on white) */
+  --blue-500: #f0c23a;
+  --sky-400: #f2c94c;    /* bright gold: gradients, charts */
+  --sky-300: #f7de85;
+  --sky-100: #fbf6e6;    /* pale gold tint */
+}
+.sidebar { background: linear-gradient(170deg, #0d0d0d 0%, #1c1c1c 60%, #3a2f12 130%); }
+.auth-side { background: linear-gradient(155deg, #0d0d0d 0%, #1c1c1c 55%, #6e5316 135%); }
+.auth-side::before { background: radial-gradient(circle, rgba(224,184,74,.35), transparent 70%); }
+.auth-side::after { background: radial-gradient(circle, rgba(240,217,139,.18), transparent 70%); }
+.btn-primary { color: #111; background: linear-gradient(135deg, #e0b84a, #c49a2c); box-shadow: 0 6px 18px rgba(169,127,28,.3); }
+.btn-primary:hover { box-shadow: 0 10px 24px rgba(169,127,28,.4); }
+.avatar { color: #111; background: linear-gradient(135deg, #e0b84a, #c49a2c); }
+.sidebar nav a.active .ico { color: var(--blue-600); }
+.sidebar nav a { color: rgba(255,255,255,0.8); }
+.lang-toggle button.active { background: #0d0d0d; }
+.kpi::before { background: linear-gradient(90deg, #c49a2c, #e0b84a); }
+.kpi.green::before { background: linear-gradient(90deg, #1f9d55, #5fd18d); }
+.kpi.amber::before { background: linear-gradient(90deg, #e0a100, #ffcf5c); }
+.kpi.red::before { background: linear-gradient(90deg, #d64545, #ff8a8a); }
+.progress > span { background: linear-gradient(90deg, #c49a2c, #e0b84a); }
+.powered { font-size: 0.78rem; color: rgba(255,255,255,0.7); }
+.auth-logo[src$="practiceplan-logo.png"] { object-fit: contain; }
+
+/* wide wordmark logo */
+.auth-logo[src$="practiceplan-logo.png"] { width: min(300px, 80%); height: auto; padding: 18px 22px; border-radius: 22px; background: #fff; }
+.sidebar .brand-row { padding: 6px 4px 18px; }
+.sidebar .brand-row img[src$="practiceplan-logo.png"] { width: 100%; height: auto; max-width: 230px; padding: 10px 14px; border-radius: 14px; background: #fff; }
+.sidebar .brand-row img[src$="practiceplan-logo.png"] + span { display: none; }
+.auth-card .brand-row img[src$="practiceplan-logo.png"] { width: auto; height: 38px; }
+.auth-card .brand-row img[src$="practiceplan-logo.png"] + span { display: none; }
+@media (max-width: 900px) { .auth-logo[src$="practiceplan-logo.png"] { width: 190px; padding: 10px 14px; border-radius: 14px; } }
+
+/* ---- flat gold, no gradients ---- */
+:root { --gold: #e6b422; --gold-dark: #b98a0a; }
+body.portal { background: #faf8f2; }
+.sidebar { background: #0d0d0d; }
+.sidebar nav a.active { background: var(--gold); color: #0d0d0d; box-shadow: none; }
+.sidebar nav a.active .ico { color: #0d0d0d; }
+.sidebar nav a:hover { background: rgba(230,180,34,0.14); }
+.sidebar .brand-row { border-bottom: 1px solid rgba(230,180,34,.35); margin-bottom: 12px; }
+.sidebar .side-foot { border-top-color: rgba(230,180,34,.35); }
+.topbar { border-bottom: 3px solid var(--gold); border-radius: 18px; }
+.auth-side { background: #0d0d0d; }
+.auth-side::before, .auth-side::after { display: none; }
+.auth-side h1 { color: var(--gold); }
+.btn-primary { background: var(--gold); color: #0d0d0d; box-shadow: none; }
+.btn-primary:hover { background: #f2c230; box-shadow: 0 6px 16px rgba(230,180,34,.4); }
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold-dark); }
+.avatar { background: var(--gold); color: #0d0d0d; box-shadow: none; }
+.kpi::before, .kpi.green::before, .kpi.amber::before, .kpi.red::before { height: 5px; }
+.kpi::before { background: var(--gold); }
+.kpi.green::before { background: #1f9d55; } .kpi.amber::before { background: #e0a100; } .kpi.red::before { background: #d64545; }
+.cat-card { border-top-width: 5px; }
+.progress > span { background: var(--gold); }
+.tabs button.active { box-shadow: inset 0 -3px 0 var(--gold); }
+.panel { border-top: 3px solid var(--gold); }
+.chip-blue { background: #fbf1cf; color: #7a5a00; }
+.eyebrow, .greet { color: var(--gold-dark); }
+.demo-box { background: #fbf6e6; border-color: var(--gold); }
+.form-info, .banner.info { background: #fbf6e6; border-color: #ecd486; color: #3b2f05; }
+table.data tr:hover td { background: #fbf6e6; }
+a { color: var(--gold-dark); }
+.link-btn { color: var(--gold-dark); }
+
+.q-ref, .page-head .greet, .auth-card .brand-row, .muted a { color: var(--gold-dark); }
+.kpi::before { background: var(--gold); }

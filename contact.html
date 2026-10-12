@@ -21,7 +21,7 @@
       <a href="pricing.html" data-i18n="nav-pricing">Pricing</a>
       <a href="hiw-guide.html" data-i18n="nav-hiw">HIW Guide</a>
       <a href="contact.html" data-i18n="nav-contact">Contact</a>
-      <a href="portal.html" data-i18n="nav-portal">Portal Login</a>
+      <a href="portal/app.html" data-i18n="nav-portal">Portal Login</a>
     </nav>
     <div class="nav-actions">
       <div class="lang-toggle">
@@ -75,6 +75,7 @@
             </div>
           </div>
           <input type="hidden" name="practice-type" id="practice-type" value="Independent practice">
+          <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;height:0;width:0;opacity:0">
 
           <div class="field-row">
             <div class="field">
@@ -101,9 +102,9 @@
           <div class="field">
             <label for="cf-type" data-i18n="contact-label-type">Enquiry type</label>
             <select id="cf-type" name="enquiry-type">
-              <option data-i18n="contact-opt-demo">Book a demo</option>
-              <option data-i18n="contact-opt-interest">Expression of interest</option>
-              <option data-i18n="contact-opt-general">General enquiry</option>
+              <option value="demo" data-i18n="contact-opt-demo">Book a demo</option>
+              <option value="interest" data-i18n="contact-opt-interest">Expression of interest</option>
+              <option value="general" data-i18n="contact-opt-general">General enquiry</option>
             </select>
           </div>
 
@@ -119,6 +120,7 @@
 
           <button type="submit" class="btn btn-primary btn-block btn-lg" data-i18n="contact-submit">Send enquiry</button>
         </form>
+        <div class="form-sent" data-i18n="contact-sent">Thanks — we've received your message and will be in touch within one working day.</div>
         <div class="form-success" data-i18n="contact-success">Thanks — your email client should have opened with your enquiry ready to send. If nothing opened, email us directly at jonathan.milton.anderson@gmail.com.</div>
       </div>
     </div>
@@ -138,7 +140,7 @@
         <ul>
           <li><a href="services.html" data-i18n="footer-services">Services</a></li>
           <li><a href="pricing.html" data-i18n="footer-pricing">Pricing</a></li>
-          <li><a href="portal.html" data-i18n="footer-portal">Portal login</a></li>
+          <li><a href="portal/app.html" data-i18n="footer-portal">Portal login</a></li>
         </ul>
       </div>
       <div>
@@ -164,6 +166,7 @@
   </div>
 </footer>
 
+<script src="js/site-config.js"></script>
 <script src="js/translations.js"></script>
 <script src="js/main.js"></script>
 </body>
