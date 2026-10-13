@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex"><title>Portal tour — Cymru Compliance</title>
+<style>
+ body{margin:0;font-family:Inter,"Segoe UI",system-ui,sans-serif;background:#0a1f3d;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:28px 16px}
+ h1{font-size:clamp(1.4rem,3vw,2.2rem);margin:0 0 6px;letter-spacing:-.02em;text-align:center} p{margin:0 0 18px;opacity:.8;text-align:center}
+ .tabs{display:flex;gap:6px;background:rgba(255,255,255,.1);padding:5px;border-radius:999px;margin-bottom:18px}
+ .tabs button{border:0;background:transparent;color:#fff;font:inherit;font-weight:700;padding:10px 22px;border-radius:999px;cursor:pointer}
+ .tabs button.on{background:#4fb6e8;color:#06203d} body.pp .tabs button.on{background:#e6b422;color:#0d0d0d} body.pp{background:#0d0d0d}
+ video{width:min(1100px,100%);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.5);background:#000}
+ a{color:inherit;opacity:.8;margin-top:18px}
+</style></head><body>
+<h1>See the portal in action</h1><p>Principal, Staff and Group Admin logins — with sample data.</p>
+<div class="tabs"><button id="b1" class="on">Cymru Compliance</button><button id="b2">Practice Plan</button></div>
+<video id="v" controls playsinline preload="metadata" poster="cymru-poster.jpg"><source src="cymru-compliance-promo.mp4" type="video/mp4"></video>
+<a href="../portal/app.html">Try the live demo →</a>
+<script>
+ var v=document.getElementById("v"),b1=document.getElementById("b1"),b2=document.getElementById("b2");
+ function pick(pp){ b1.classList.toggle("on",!pp); b2.classList.toggle("on",pp); document.body.classList.toggle("pp",pp);
+   v.poster=pp?"practice-plan-poster.jpg":"cymru-poster.jpg"; v.src=pp?"practice-plan-promo.mp4":"cymru-compliance-promo.mp4"; v.load(); }
+ b1.onclick=function(){pick(false)}; b2.onclick=function(){pick(true)};
+</script></body></html>
