@@ -119,7 +119,7 @@ window.CC_CY = {
   /* compliance check */
   "Mock-inspect your practice against the structure HIW uses. Results feed your dashboard and action list.": "Hunan-arolygwch eich practis yn erbyn y strwythur y mae HIW yn ei ddefnyddio. Mae'r canlyniadau'n bwydo eich dangosfwrdd a'ch rhestr gweithredu.",
   "Start a new assessment": "Dechrau asesiad newydd", "Start your first assessment": "Dechrau eich asesiad cyntaf",
-  "The questions below are illustrative starting content and should be reviewed against HIW's published framework by a dental compliance expert before you rely on the score.": "Cynnwys cychwynnol darluniadol yw'r cwestiynau isod a dylai arbenigwr cydymffurfiaeth ddeintyddol eu hadolygu yn erbyn fframwaith cyhoeddedig HIW cyn i chi ddibynnu ar y sgôr.",
+  "These questions follow the HIW dental inspection workbook. Have them confirmed against HIW's current framework by a dental compliance expert before you rely on the score.": "Mae'r cwestiynau hyn yn dilyn llyfr gwaith arolygu deintyddol AGIC. Dylai arbenigwr cydymffurfiaeth ddeintyddol eu cadarnhau yn erbyn fframwaith cyfredol AGIC cyn i chi ddibynnu ar y sgôr.",
   "Past assessments": "Asesiadau blaenorol", "No assessments completed yet.": "Dim asesiadau wedi'u cwblhau eto.", "Gap report": "Adroddiad bylchau",
   "Answers save automatically. Complete the assessment to generate your gap report.": "Mae atebion yn cadw'n awtomatig. Cwblhewch yr asesiad i gynhyrchu eich adroddiad bylchau.",
   "Answered": "Atebwyd", "Complete assessment": "Cwblhau'r asesiad", "Notes or action required (optional)": "Nodiadau neu gamau gweithredu sydd eu hangen (dewisol)",

@@ -184,11 +184,11 @@
 
       /* ---------- self-assessment ---------- */
       assessment: {
-        questions: function () { return sb.from("assessment_questions").select("*").order("sort").then(ok); },
-        list: function (pid) { return sb.from("assessments").select("*").eq("practice_id", pid).order("created_at", { ascending: false }).then(ok); },
+        questions: function (kind) { return sb.from("assessment_questions").select("*").eq("kind", kind || "hiw").order("sort").then(ok); },
+        list: function (pid, kind) { return sb.from("assessments").select("*").eq("practice_id", pid).eq("kind", kind || "hiw").order("created_at", { ascending: false }).then(ok); },
         answers: function (aid) { return sb.from("assessment_answers").select("*").eq("assessment_id", aid).then(ok); },
-        start: function (pid, prefillFrom) {
-          return sb.from("assessments").insert({ practice_id: pid }).select().single().then(ok).then(function (a) {
+        start: function (pid, prefillFrom, kind) {
+          return sb.from("assessments").insert({ practice_id: pid, kind: kind || "hiw" }).select().single().then(ok).then(function (a) {
             if (!prefillFrom) return a;
             return api.assessment.answers(prefillFrom).then(function (old) {
               if (!old.length) return a;
@@ -217,6 +217,61 @@
         mine: function () { return sb.from("inspector_grants").select("*").order("expires_at", { ascending: false }).then(ok); },
         create: function (row) { return sb.from("inspector_grants").insert(row).then(ok); },
         revoke: function (id) { return sb.from("inspector_grants").update({ revoked: true }).eq("id", id).then(ok); }
+      },
+
+      /* ---------- recurring tasks, maintenance register, digital logs, policies, staff checklists ---------- */
+      tasks: {
+        list: function (pid) { return sb.from("practice_tasks").select("*").eq("practice_id", pid).order("next_due").then(ok); },
+        add: function (rows) { return sb.from("practice_tasks").insert(rows).then(ok); },
+        update: function (id, patch) { return sb.from("practice_tasks").update(patch).eq("id", id).select().single().then(ok); },
+        remove: function (id) { return sb.from("practice_tasks").delete().eq("id", id).then(ok); },
+        complete: function (id, note) { return sb.rpc("complete_task", { p_task: id, p_note: note || null }).then(ok); },
+        completions: function (pid) { return sb.from("task_completions").select("*").eq("practice_id", pid).order("done_on", { ascending: false }).limit(500).then(ok); }
+      },
+      maintenance: {
+        list: function (pid) { return sb.from("maintenance_items").select("*").eq("practice_id", pid).order("grp").order("name").then(ok); },
+        add: function (rows) { return sb.from("maintenance_items").insert(rows).then(ok); },
+        update: function (id, patch) { return sb.from("maintenance_items").update(patch).eq("id", id).select().single().then(ok); },
+        remove: function (id) { return sb.from("maintenance_items").delete().eq("id", id).then(ok); }
+      },
+      logs: {
+        list: function (pid, f) {
+          var q = sb.from("log_entries").select("*").eq("practice_id", pid);
+          if (f && f.type) q = q.eq("log_type", f.type);
+          return q.order("created_at", { ascending: false }).limit((f && f.limit) || 400).then(ok);
+        },
+        add: function (row) { return sb.from("log_entries").insert(row).select().single().then(ok); }
+      },
+      policies: {
+        list: function () { return sb.from("policies").select("*").order("ref").then(ok); },
+        reviews: function (pid) { return sb.from("policy_reviews").select("*").eq("practice_id", pid).then(ok); },
+        review: function (policyId) {
+          return sb.auth.getUser().then(function (u) {
+            var uid = u.data.user.id;
+            return sb.from("profiles").select("practice_id").eq("id", uid).single().then(ok).then(function (p) {
+              return sb.from("policies").select("version").eq("id", policyId).single().then(ok).then(function (pol) {
+                return sb.from("policy_reviews").upsert({ policy_id: policyId, profile_id: uid, practice_id: p.practice_id, version: pol.version }, { onConflict: "policy_id,profile_id,version", ignoreDuplicates: true }).then(ok);
+              });
+            });
+          });
+        }
+      },
+      checklist: {
+        list: function (pid) { return sb.from("hr_checklist").select("*").eq("practice_id", pid).then(ok); },
+        set: function (row) { return sb.from("hr_checklist").upsert({ practice_id: row.practice_id, staff_id: row.staff_id, kind: row.kind, item: row.item, status: row.status || "done", done_on: row.done_on || null, note: row.note || null }, { onConflict: "staff_id,kind,item" }).then(ok); },
+        clear: function (staffId, kind, item) { return sb.from("hr_checklist").delete().eq("staff_id", staffId).eq("kind", kind).eq("item", item).then(ok); }
+      },
+
+      /* ---------- alert preferences (email reminders) ---------- */
+      alerts: {
+        getPrefs: function () {
+          return sb.from("alert_prefs").select("email_digest").limit(1).then(ok).then(function (r) { return { email_digest: r[0] ? r[0].email_digest !== false : true }; });
+        },
+        setPrefs: function (on) {
+          return sb.auth.getUser().then(function (u) {
+            return sb.from("alert_prefs").upsert({ profile_id: u.data.user.id, email_digest: !!on }, { onConflict: "profile_id" }).then(ok);
+          });
+        }
       },
 
       /* ---------- HR (staff records, leave, documents, notes) ---------- */

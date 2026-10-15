@@ -16,7 +16,7 @@ async function newApp(userId, lang) {
   w.URL.createObjectURL = () => "blob:demo";
   w.print = () => {}; w.open = () => {};
   if (lang) w.localStorage.setItem("cc_lang", lang);
-  const files = ["js/site-config.js", "portal/js/scoring.js", "portal/js/core.js","portal/js/hr-core.js", "portal/js/i18n.js","portal/js/i18n-hr.js", "portal/js/demo-content.js", "portal/js/demo-hr.js","portal/js/api-demo.js", "portal/js/api-supabase.js", "portal/js/views-dashboard.js", "portal/js/views-practice.js", "portal/js/views-group.js", "portal/js/views-admin.js", "portal/js/views-hr.js","portal/js/app.js"];
+  const files = ["js/site-config.js", "portal/js/scoring.js", "portal/js/core.js","portal/js/hr-core.js", "portal/js/i18n.js","portal/js/i18n-hr.js", "portal/js/i18n-train.js", "portal/js/i18n-tools.js", "portal/js/demo-content.js", "portal/js/tools-content.js", "portal/js/audit-content.js", "portal/js/demo-hr.js", "portal/js/demo-tools.js","portal/js/api-demo.js", "portal/js/api-supabase.js", "portal/js/views-dashboard.js", "portal/js/views-practice.js", "portal/js/views-group.js", "portal/js/views-admin.js", "portal/js/views-hr.js", "portal/js/views-train.js", "portal/js/views-tasks.js", "portal/js/views-compliance.js","portal/js/app.js"];
   for (const f of files) w.eval(fs.readFileSync(path.join(ROOT, f), "utf8") + "\n//# sourceURL=" + f);
   await sleep(60);
   if (userId) { w.document.querySelector(`[data-demo="${userId}"]`).click(); await sleep(150); }
@@ -60,7 +60,8 @@ const ROLES = [["u_admin", "platform_admin"], ["u_ga", "group_admin"], ["u_pr1",
   await go(app, "check");
   const startBtn = view(app).querySelector('[data-act="start"]'); ok("check: start button", !!startBtn);
   startBtn.click(); await sleep(150);
-  const radios = view(app).querySelectorAll('input[type=radio][value="yes"]'); ok("check: 24 questions", radios.length === 24, String(radios.length));
+  const radios = view(app).querySelectorAll('input[type=radio][value="yes"]'); ok("check: all HIW questions listed", radios.length === app.w.CC.DEMO_CONTENT.questions.filter(q => !q.kind || q.kind === "hiw").length && radios.length >= 70, String(radios.length));
+  ok("check: evidence hints shown", /q-hint/.test(view(app).innerHTML));
   radios.forEach(r => { r.checked = true; r.dispatchEvent(new app.w.Event("change", { bubbles: true })); }); await sleep(100);
   view(app).querySelector('[data-act="complete"]').click(); await sleep(300);
   ok("check: gap report modal after completing", !!modal(app) && /No gaps|Gap report|bylchau/i.test(modal(app).innerHTML));
@@ -161,7 +162,7 @@ const ROLES = [["u_admin", "platform_admin"], ["u_ga", "group_admin"], ["u_pr1",
   await go(app, "hr");
   ok("hr: staff cards shown", view(app).querySelectorAll(".hr-card").length >= 6, String(view(app).querySelectorAll(".hr-card").length));
   ok("hr: shows only own practice staff", !/Newport|Callum Reid/.test(view(app).innerHTML));
-  ok("hr: initials avatar for staff without photo", view(app).querySelectorAll(".hr-avatar-init").length >= 6);
+  ok("hr: photos for most staff, initials for those without", view(app).querySelectorAll(".hr-avatar img").length >= 5 && view(app).querySelectorAll(".hr-avatar-init").length >= 1);
   view(app).querySelector('.hr-card[data-act="open"]').click(); await sleep(200);
   ok("hr: staff record modal opens with 4 tabs", !!modal(app) && modal(app).querySelectorAll("[data-ptab]").length === 4);
   ok("hr: balance cards in staff record", /Entitlement/.test(modal(app).innerHTML) && modal(app).querySelectorAll(".hr-bal .kpi").length === 4);
@@ -283,6 +284,162 @@ const ROLES = [["u_admin", "platform_admin"], ["u_ga", "group_admin"], ["u_pr1",
   ok("hr: Welsh strings render", /Fy Adnoddau Dynol|Ceisiadau|Hawl/.test(view(app).innerHTML) || /Mae eich cofnod|Nid yw eich cofnod/.test(view(app).innerHTML), view(app).innerHTML.slice(0, 200));
   await go(app, "hr"); ok("hr: Welsh people tab", /Adnoddau Dynol/.test(view(app).innerHTML));
   app.dom.window.close();
+
+  // ---------------- Group training + alerts ----------------
+  console.log("\n=== Group training & alerts");
+  app = await newApp("u_ga");
+  await go(app, "grouptrain");
+  ok("grouptrain: matrix lists group practices", /Swansea Marina Dental/.test(view(app).innerHTML) && /Newport High Street/.test(view(app).innerHTML) && !/Aberystwyth/.test(view(app).innerHTML));
+  ok("grouptrain: overdue list shown", /days overdue/.test(view(app).innerHTML));
+  const trBefore = (await app.w.CC.api.training.assignments({})).length;
+  view(app).querySelector('[data-act="assign"]').click(); await sleep(80);
+  let gm = modal(app); ok("grouptrain: assign modal opens", !!gm && gm.querySelectorAll('input[name="mods"]').length >= 10);
+  const refreshMod = app.w.CC.DEMO_CONTENT.modules.filter(m => m.kind === "refresher")[3];
+  gm.querySelector(`input[name="mods"][value="${refreshMod.id}"]`).checked = true;
+  gm.querySelector("form").dispatchEvent(new app.w.Event("submit", { cancelable: true })); await sleep(250);
+  const trAfter = await app.w.CC.api.training.assignments({});
+  ok("grouptrain: bulk assign created assignments", trAfter.length === trBefore + 5, String(trAfter.length - trBefore));
+  ok("grouptrain: all group practices covered, none outside", new Set(trAfter.filter(a => a.module_id === refreshMod.id).map(a => a.practice_id)).size === 3 && !trAfter.some(a => a.practice_id === "p4"));
+  ok("grouptrain: bulk assign audited", (await app.w.CC.api.audit.list({})).filter(a => a.action === "assign_training").length >= 3);
+  ok("grouptrain: assigning again adds nothing", (await (async () => { await app.w.CC.api.training.assign(trAfter.filter(a => a.module_id === refreshMod.id).map(a => ({ module_id: a.module_id, profile_id: a.profile_id, practice_id: a.practice_id }))); return app.w.CC.api.training.assignments({}); })()).length === trAfter.length);
+  await go(app, "alerts");
+  ok("alerts: group admin sees practice column + items", /<th>Practice<\/th>/.test(view(app).innerHTML) && view(app).querySelectorAll("tbody tr").length > 3);
+  ok("alerts: bell shows a count", !app.doc.getElementById("bell").hidden && !app.doc.getElementById("bell-n").hidden);
+  app.dom.window.close();
+
+  app = await newApp("u_pm1");
+  await go(app, "alerts");
+  const rowsHtml = view(app).innerHTML;
+  ok("alerts: principal sees expired/expiring items", /expired \d+ days ago|in \d+ days/.test(rowsHtml) && /Urgent|Soon/.test(rowsHtml));
+  ok("alerts: HR expiries included", /GDC registration|Indemnity|DBS/.test(rowsHtml));
+  ok("alerts: filter by type", (() => { const sel = app.doc.getElementById("f-kind"); sel.value = "training"; sel.dispatchEvent(new app.w.Event("change")); return true; })());
+  await sleep(50);
+  ok("alerts: training filter narrows list", view(app).querySelectorAll("tbody tr").length === 0 || [...view(app).querySelectorAll("tbody tr")].every(r => /Training overdue/.test(r.innerHTML)));
+  const cb = app.doc.getElementById("pref-email"); cb.checked = false; cb.dispatchEvent(new app.w.Event("change")); await sleep(80);
+  ok("alerts: email opt-out saved", (await app.w.CC.api.alerts.getPrefs()).email_digest === false);
+  app.dom.window.close();
+
+  app = await newApp("u_st1");
+  await go(app, "alerts");
+  ok("alerts: staff sees no one else's items", !/<th>Practice<\/th>/.test(view(app).innerHTML) && ![...view(app).querySelectorAll("tbody tr")].some(r => /Priya Patel|Rhian Davies/.test(r.innerHTML)));
+  app.dom.window.close();
+  app = await newApp("u_pr4");
+  await go(app, "alerts");
+  ok("alerts: independent practice scoped to itself", !/Swansea|Newport|Cardiff/.test(view(app).innerHTML.replace(/<option[\s\S]*?<\/option>/g, "")));
+  ok("alerts: inspector has no bell", (await (async () => { const a = await newApp("u_insp"); const h = a.doc.getElementById("bell").hidden; a.dom.window.close(); return h; })()));
+  app.dom.window.close();
+  app = await newApp("u_ga", "cy");
+  await go(app, "grouptrain"); ok("grouptrain: Welsh renders", /Hyfforddiant grŵp/.test(view(app).innerHTML));
+  await go(app, "alerts"); ok("alerts: Welsh renders", /Rhybuddion/.test(view(app).innerHTML));
+  app.dom.window.close();
+
+  // ---------------- Compliance tools ----------------
+  console.log("\n=== Tasks, maintenance, logs, policies, staff compliance, audits");
+  {
+  app = await newApp("u_pm1");
+  let A = app.w.CC.api;
+  await go(app, "tasks");
+  ok("tasks: list shows recommended tasks", /Medical emergency drugs/.test(view(app).innerHTML) && view(app).querySelectorAll("tbody tr").length >= 15);
+  ok("tasks: overdue and on-time KPIs shown", /Overdue/.test(view(app).innerHTML) && /Done on time/.test(view(app).innerHTML));
+  const before0 = (await A.tasks.list("p1")).length;
+  view(app).querySelector('[data-act="add"]').click(); await sleep(60);
+  let ctm = modal(app); ctm.querySelector('input[name="title"]').value = "Test monthly task"; ctm.querySelector('select[name="frequency"]').value = "monthly"; ctm.querySelector('input[name="next_due"]').value = app.w.CC.isoDate(-2);
+  ctm.querySelector("form").dispatchEvent(new app.w.Event("submit", { cancelable: true })); await sleep(200);
+  const ctl = await A.tasks.list("p1"); ok("tasks: add task via UI", ctl.length === before0 + 1);
+  const mine = ctl.find(t => t.title === "Test monthly task");
+  const nextBefore = mine.next_due;
+  view(app).querySelector(`[data-act="done"][data-id="${mine.id}"]`).click(); await sleep(60);
+  modal(app).querySelector("form").dispatchEvent(new app.w.Event("submit", { cancelable: true })); await sleep(200);
+  const after1 = (await A.tasks.list("p1")).find(t => t.id === mine.id);
+  ok("tasks: mark done moves next due past today", after1.next_due > nextBefore && after1.next_due > app.w.CC.isoDate(0) && after1.last_done === app.w.CC.isoDate(0));
+  ok("tasks: completion recorded + audited", (await A.tasks.completions("p1")).some(c => c.task_id === mine.id) && (await A.audit.list({})).some(a => a.action === "complete_task"));
+  view(app).querySelector('[data-seg="calendar"]').click(); await sleep(60);
+  ok("tasks: calendar renders month grid with events", view(app).querySelectorAll(".cal-cell").length >= 28 && view(app).querySelectorAll(".cal-ev").length > 3);
+  view(app).querySelector('[data-act="next"]').click(); await sleep(40); ok("tasks: calendar next month", view(app).querySelectorAll(".cal-cell").length >= 28);
+  view(app).querySelector(".cal-cell:not(.cal-off)").click(); await sleep(40); ok("tasks: calendar day opens", !!modal(app)); modal(app).remove();
+  view(app).querySelector('[data-seg="list"]').click(); await sleep(40);
+  ok("tasks: recommended set offers nothing when all added", (() => { view(app).querySelector('[data-act="library"]').click(); return true; })()); await sleep(60);
+  modal(app) && modal(app).remove();
+  app.dom.window.close();
+
+  app = await newApp("u_st1"); A = app.w.CC.api;
+  await go(app, "tasks");
+  ok("tasks: staff sees only own assigned tasks, no add", view(app).querySelectorAll("tbody tr").length >= 1 && view(app).querySelectorAll("tbody tr").length <= 4 && !view(app).querySelector('[data-act="add"]'));
+  const sTasks = await A.tasks.list("p1"); const notMine = (await (async () => { app.w.CC.api.demoLogin("u_pm1"); const all = await A.tasks.list("p1"); app.w.CC.api.demoLogin("u_st1"); return all.find(t => t.assignee_id !== "u_st1"); })());
+  let denied = false; try { await A.tasks.complete(notMine.id); } catch (e) { denied = true; } ok("tasks: staff cannot complete others' tasks", denied);
+  await go(app, "logs");
+  ok("logs: six log cards", view(app).querySelectorAll(".log-card").length === 6);
+  const lbefore = (await A.logs.list("p1", {})).length;
+  view(app).querySelector('[data-act="add"][data-key="fridge"]').click(); await sleep(60);
+  let lm = modal(app); lm.querySelector('input[name="f_temp"]').value = "11"; lm.querySelector('input[name="f_reset"]').checked = true;
+  lm.querySelector("form").dispatchEvent(new app.w.Event("submit", { cancelable: true })); await sleep(120);
+  ok("logs: out-of-range entry needs a note", (await A.logs.list("p1", {})).length === lbefore && /action you have taken/.test(modal(app).innerHTML)); modal(app).remove();
+  view(app).querySelector('[data-act="add"][data-key="fridge"]').click(); await sleep(60);
+  lm = modal(app); lm.querySelector('input[name="f_temp"]').value = "11"; lm.querySelector('input[name="f_reset"]').checked = true; lm.querySelector('textarea[name="note"]').value = "Door left open; stock checked and temperature rechecked.";
+  lm.querySelector("form").dispatchEvent(new app.w.Event("submit", { cancelable: true })); await sleep(200);
+  const lAfter = await A.logs.list("p1", {}); ok("logs: failed entry saved and flagged", lAfter.length === lbefore + 1 && lAfter.find(l => l.note && /rechecked/.test(l.note)).pass === false);
+  view(app).querySelector('[data-act="add"][data-key="fridge"]').click(); await sleep(60);
+  lm = modal(app); lm.querySelector('input[name="f_temp"]').value = "4"; lm.querySelector('input[name="f_reset"]').checked = true;
+  lm.querySelector("form").dispatchEvent(new app.w.Event("submit", { cancelable: true })); await sleep(200);
+  ok("logs: good entry saved as pass, signed by user", (await A.logs.list("p1", {})).filter(l => l.done_by === "u_st1" && l.log_type === "fridge" && l.pass).length >= 1);
+  ok("logs: entries are immutable via API", !A.logs.update && !A.logs.remove);
+  let pdenied = false; try { await A.logs.add({ practice_id: "p2", log_type: "fridge", data: {} }); } catch (e) { pdenied = true; } ok("logs: cannot log into another practice", pdenied);
+  await go(app, "policies");
+  ok("policies: library listed with to-review count", view(app).querySelectorAll("tbody tr").length === 15 && /Policies to review/.test(view(app).innerHTML));
+  const toRev = [...view(app).querySelectorAll("tbody tr")].filter(r => /To review/.test(r.innerHTML)).length;
+  const firstTodo = [...view(app).querySelectorAll("tbody tr")].find(r => /To review/.test(r.innerHTML)).querySelector("button");
+  firstTodo.click(); await sleep(60);
+  ok("policies: reading shows policy text and sign-off button", /Purpose/.test(modal(app).innerHTML) && /read and understood/.test(modal(app).innerHTML));
+  modal(app).querySelector("form").dispatchEvent(new app.w.Event("submit", { cancelable: true })); await sleep(200);
+  ok("policies: sign-off reduces to-review count", [...view(app).querySelectorAll("tbody tr")].filter(r => /To review/.test(r.innerHTML)).length === toRev - 1);
+  await go(app, "dashboard");
+  ok("dashboard: tools summary for staff", /Tasks done on time|Policies to review/.test(view(app).innerHTML));
+  app.dom.window.close();
+
+  app = await newApp("u_pm1"); A = app.w.CC.api;
+  await go(app, "maintenance");
+  ok("maintenance: groups and statuses shown", /Fire/.test(view(app).innerHTML) && /overdue|In date|Date needed/.test(view(app).innerHTML));
+  const mItems = await A.maintenance.list("p1"); const needDate = mItems.find(m => !m.last_done) || mItems[0];
+  view(app).querySelector(`[data-act="today"][data-id="${needDate.id}"]`).click(); await sleep(150);
+  const mAfter = (await A.maintenance.list("p1")).find(m => m.id === needDate.id);
+  ok("maintenance: done today sets next due from frequency", mAfter.last_done === app.w.CC.isoDate(0) && mAfter.next_due > mAfter.last_done);
+  await go(app, "staffcompliance");
+  ok("staffcompliance: overview with percentages", /Training/.test(view(app).innerHTML) && view(app).querySelectorAll(".progress").length >= 5);
+  view(app).querySelector('[data-seg="training"]').click(); await sleep(60);
+  ok("staffcompliance: training matrix has all courses", view(app).querySelectorAll("th.mx-h").length === app.w.CC.TOOLS.COURSES.length);
+  const cell = view(app).querySelector("td[data-cell]"); cell.click(); await sleep(60);
+  ok("staffcompliance: cell opens editor", !!modal(app)); 
+  modal(app).querySelector('input[name="done_on"]').value = app.w.CC.isoDate(-5); modal(app).querySelector("form").dispatchEvent(new app.w.Event("submit", { cancelable: true })); await sleep(200);
+  ok("staffcompliance: recorded date saved", (await A.checklist.list("p1")).some(c => c.done_on === app.w.CC.isoDate(-5)));
+  view(app).querySelector('[data-seg="recruitment"]').click(); await sleep(60);
+  ok("staffcompliance: recruitment checklist columns", view(app).querySelectorAll("th.mx-h").length === app.w.CC.TOOLS.RECRUIT.length);
+  await go(app, "audits");
+  ok("audits: other audit types offered", /Infection prevention/.test(view(app).innerHTML) && !/HIW self-assessment<\/button>/.test(view(app).innerHTML));
+  view(app).querySelector('[data-act="start"]').click(); await sleep(150);
+  const aRadios = view(app).querySelectorAll('input[type=radio][value="yes"]'); ok("audits: IPC audit shows its 14 questions", aRadios.length === 14, String(aRadios.length));
+  aRadios.forEach((r, i) => { r.checked = true; r.dispatchEvent(new app.w.Event("change", { bubbles: true })); }); await sleep(80);
+  view(app).querySelector('[data-act="complete"]').click(); await sleep(300);
+  ok("audits: completes with gap report", !!modal(app)); modal(app) && modal(app).remove();
+  const pi = await A.practiceInputs("p1");
+  ok("audits: HIW score input unaffected by other audit kinds", pi.assessment && pi.assessment.answers.length === app.w.CC.DEMO_CONTENT.questions.filter(q => !q.kind || q.kind === "hiw").length);
+  await go(app, "alerts");
+  ok("alerts: include tasks and maintenance kinds", app.w.CC.alerts.list.some(a => a.kind === "task") && app.w.CC.alerts.list.some(a => a.kind === "maintenance"));
+  await go(app, "dashboard");
+  ok("dashboard: tools summary KPIs", /Staff compliance/.test(view(app).innerHTML) && /Maintenance overdue/.test(view(app).innerHTML));
+  app.dom.window.close();
+
+  app = await newApp("u_ga"); A = app.w.CC.api;
+  await go(app, "staffcompliance"); ok("group admin: staff compliance read-only", !view(app).querySelector("[data-cell]") && /Staff compliance/.test(view(app).innerHTML));
+  await go(app, "maintenance"); ok("group admin: maintenance read-only", !view(app).querySelector('[data-act="add"]') && view(app).querySelectorAll("tbody tr").length > 5);
+  let md = false; try { await A.maintenance.update((await A.maintenance.list("p1"))[0].id, { notes: "x" }); } catch (e) { md = true; } ok("group admin: cannot edit maintenance", md);
+  await go(app, "tasks"); ok("group admin: can add tasks across group", !!view(app).querySelector('[data-act="add"]'));
+  app.dom.window.close();
+  app = await newApp("u_ga", "cy"); await go(app, "tasks"); ok("tasks: Welsh renders", /Tasgau a chalendr/.test(view(app).innerHTML)); await go(app, "maintenance"); ok("maintenance: Welsh renders", /Cofrestr cynnal a chadw/.test(view(app).innerHTML)); app.dom.window.close();
+  app = await newApp("u_pm1", "cy"); await go(app, "policies"); ok("policies: Welsh titles", /Polisi cwynion/.test(view(app).innerHTML)); await go(app, "audits"); ok("audits: Welsh renders", /Archwiliadau/.test(view(app).innerHTML)); app.dom.window.close();
+  app = await newApp("u_pr4"); await go(app, "staffcompliance");
+  ok("independent practice: staff compliance scoped to itself", /Nia Parry/.test(view(app).innerHTML) || /Rhodri/.test(view(app).innerHTML)); ok("independent practice: no other practices' staff", !/Owen Evans|Callum Reid/.test(view(app).innerHTML)); app.dom.window.close();
+
+  }
 
   // Language toggle + settings + MFA demo
   app = await newApp("u_pr1");

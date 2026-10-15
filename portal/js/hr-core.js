@@ -95,6 +95,11 @@
   HR.isOffOn = function (l, day) { return l.status === "approved" && l.start_date <= day && l.end_date >= day; };
 
   /* ---------- staff helpers ---------- */
+  HR.firstName = function (name) {
+    var w = String(name || "").trim().split(/\s+/).filter(Boolean);
+    while (w.length > 1 && /^(dr|mr|mrs|ms|miss|mx|prof)\.?$/i.test(w[0])) w.shift();
+    return w[0] || "";
+  };
   HR.initials = function (name) { return String(name || "?").split(/\s+/).filter(Boolean).map(function (w) { return w[0]; }).slice(0, 2).join("").toUpperCase(); };
   HR.avatarHtml = function (staff, urls, size) {
     var url = staff.photo_path && urls ? urls[staff.photo_path] : null;

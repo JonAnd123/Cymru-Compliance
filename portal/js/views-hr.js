@@ -326,7 +326,7 @@
   function calendarTab() {
     var entries = cache.leaves.filter(function (l) { return l.status === "approved" || l.status === "pending"; }).map(function (l) {
       var s = staffById(l.staff_id) || { full_name: "?" };
-      return { start: l.start_date, end: l.end_date, label: s.full_name.split(" ")[0] + (l.half_day ? " ½" : ""), title: s.full_name + " — " + HR.typeLabel(l.leave_type) + (l.status === "pending" ? " (" + t("Pending") + ")" : ""), color: HR.typeInfo(l.leave_type).color, pending: l.status === "pending" };
+      return { start: l.start_date, end: l.end_date, label: HR.firstName(s.full_name) + (l.half_day ? " ½" : ""), title: s.full_name + " — " + HR.typeLabel(l.leave_type) + (l.status === "pending" ? " (" + t("Pending") + ")" : ""), color: HR.typeInfo(l.leave_type).color, pending: l.status === "pending" };
     });
     var legend = '<div class="cal-legend">' + HR.TYPES.map(function (x) { return '<span><span class="hr-dot" style="background:' + x.color + '"></span>' + esc(HR.typeLabel(x.key)) + "</span>"; }).join("") + "<span>" + esc(t("Faded = pending")) + "</span></div>";
     return calendarGrid(entries, legend);
@@ -366,7 +366,7 @@
         '<div class="page-head"><div><h1>' + esc(t("HR")) + '</h1><p class="muted">' + esc(practiceName(pid)) + " · " + esc(t("Staff records, leave and absence.")) + "</p></div>" +
         (manage ? '<div class="actions"><button type="button" class="btn btn-secondary" data-act="recordleave">' + esc(t("Record leave")) + '</button><button type="button" class="btn btn-primary" data-act="addstaff">+ ' + esc(t("Add staff member")) + "</button></div>" : "") + "</div>" +
         (!manage ? '<div class="banner info"><span>' + esc(t("You are viewing HR read-only. Each record you open is recorded in the audit log.")) + "</span></div>" : "") +
-        '<div class="grid-kpi">' + kpi(t("Staff"), cur.length, esc(t("current employees"))) + kpi(t("Off today"), off.length, off.length ? esc(off.map(function (o) { return o.staff.full_name.split(" ")[0]; }).slice(0, 3).join(", ")) : esc(t("Everyone is in"))) +
+        '<div class="grid-kpi">' + kpi(t("Staff"), cur.length, esc(t("current employees"))) + kpi(t("Off today"), off.length, off.length ? esc(off.map(function (o) { return HR.firstName(o.staff.full_name); }).slice(0, 3).join(", ")) : esc(t("Everyone is in"))) +
         kpi(t("Awaiting approval"), pend, esc(t("leave requests")), pend ? "amber" : "") + kpi(t("Expiry alerts"), alerts, esc(t("GDC, indemnity or DBS within 60 days")), alerts ? "red" : "green") + "</div>" +
         '<div class="panel"><div class="tabs hr-tabs" id="hr-tabs">' + [["people", "People"], ["leave", "Leave requests"], ["calendar", "Calendar"], ["absence", "Absence"]].map(function (x) { return '<button type="button" data-tab="' + x[0] + '" class="' + (ui.tab === x[0] ? "active" : "") + '">' + esc(t(x[1])) + "</button>"; }).join("") + '</div><div id="hr-body"></div></div>';
       function body() { return el.querySelector("#hr-body"); }

@@ -225,7 +225,7 @@
   function overview(el, pid, done, questions) {
     el.innerHTML = '<div class="page-head"><div><h1>' + esc(t("Compliance check")) + "</h1><p class=\"muted\">" + esc(t("Mock-inspect your practice against the structure HIW uses. Results feed your dashboard and action list.")) + "</p></div>" +
       '<div class="actions"><button class="btn btn-primary" data-act="start">' + esc(done.length ? t("Start a new assessment") : t("Start your first assessment")) + "</button></div></div>" +
-      '<div class="banner info"><span>' + esc(t("The questions below are illustrative starting content and should be reviewed against HIW's published framework by a dental compliance expert before you rely on the score.")) + "</span></div>" +
+      '<div class="banner info"><span>' + esc(t("These questions follow the HIW dental inspection workbook. Have them confirmed against HIW's current framework by a dental compliance expert before you rely on the score.")) + "</span></div>" +
       '<div class="panel"><h3>' + esc(t("Past assessments")) + "</h3>" + (done.length ? '<div class="table-wrap"><table class="data"><thead><tr><th>' + esc(t("Completed")) + "</th><th>" + esc(t("Score")) + "</th><th></th></tr></thead><tbody>" +
         done.map(function (a) { return "<tr><td>" + esc(CC.fmtDateTime(a.completed_at)) + "</td><td>" + (a.score === null ? "—" : a.score + "%") + '</td><td class="actions-cell"><button class="btn btn-secondary btn-sm" data-act="report" data-id="' + a.id + '">' + esc(t("Gap report")) + "</button></td></tr>"; }).join("") + "</tbody></table></div>" : '<div class="empty">' + esc(t("No assessments completed yet.")) + "</div>") + "</div>";
     el.onclick = function (e) {
@@ -244,7 +244,7 @@
         CC.CATS.map(function (c) {
           return '<div class="panel"><h3>' + esc(CC.catName(c.key)) + "</h3>" + questions.filter(function (q) { return q.category === c.key; }).map(function (q) {
             var cur = ans[q.id] || {};
-            return '<div class="q-card" data-q="' + q.id + '"><div class="q-text"><span class="q-ref">' + esc(q.ref) + "</span>" + esc(qText(q)) + '</div><div class="answers">' +
+            return '<div class="q-card" data-q="' + q.id + '"><div class="q-text"><span class="q-ref">' + esc(q.ref) + "</span>" + esc(qText(q)) + (q.hint_en ? '<span class="q-hint">' + esc(t("Evidence")) + ": " + esc(q.hint_en) + "</span>" : "") + '</div><div class="answers">' +
               ANS.map(function (o) { return '<label><input type="radio" name="q' + q.id + '" value="' + o[0] + '"' + (cur.answer === o[0] ? " checked" : "") + '><span class="a-' + o[0] + '">' + esc(t(o[1])) + "</span></label>"; }).join("") + '</div><textarea placeholder="' + esc(t("Notes or action required (optional)")) + '" rows="1">' + esc(cur.note || "") + "</textarea></div>";
           }).join("") + "</div>";
         }).join("");

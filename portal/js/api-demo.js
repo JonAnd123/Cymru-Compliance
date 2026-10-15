@@ -4,7 +4,7 @@
 (function () {
   "use strict";
   var CC = window.CC;
-  var DB_KEY = "cc_demo_db_v1", USER_KEY = "cc_demo_user";
+  var DB_KEY = "cc_demo_db_v3", USER_KEY = "cc_demo_user";
 
   function clone(x) { return x === undefined ? x : JSON.parse(JSON.stringify(x)); }
   function iso(off) { var d = new Date(); d.setDate(d.getDate() + off); return d.toISOString().slice(0, 10); }
@@ -41,6 +41,8 @@
         { id: "u_st2", email: "priya@cardiffbaydental.example", full_name: "Priya Patel", role: "staff", practice_id: "p1", group_id: null, language: "en", active: true, created_at: ts(-60) },
         { id: "u_pr2", email: "huw@newportdental.example", full_name: "Dr Huw Jones", role: "principal", practice_id: "p2", group_id: null, language: "en", active: true, created_at: ts(-270) },
         { id: "u_pr3", email: "carys@swanseamarina.example", full_name: "Dr Carys Lloyd", role: "principal", practice_id: "p3", group_id: null, language: "en", active: true, created_at: ts(-260) },
+        { id: "u_st3", email: "bethan@newportdental.example", full_name: "Bethan Rowlands", role: "staff", practice_id: "p2", group_id: null, language: "en", active: true, created_at: ts(-120) },
+        { id: "u_st4", email: "dylan@swanseamarina.example", full_name: "Dylan Pugh", role: "staff", practice_id: "p3", group_id: null, language: "en", active: true, created_at: ts(-90) },
         { id: "u_pr4", email: "emyr@aberdental.example", full_name: "Dr Emyr Hughes", role: "principal", practice_id: "p4", group_id: null, language: "cy", active: true, created_at: ts(-190) },
         { id: "u_insp", email: "alun.rees@hiw.example", full_name: "Alun Rees (HIW)", role: "inspector", practice_id: null, group_id: null, language: "en", active: true, created_at: ts(-30) }
       ],
@@ -112,6 +114,15 @@
       db.assignments.push({ id: id("t"), module_id: m.id, profile_id: "u_pm1", practice_id: "p1", assigned_by: "u_pr1", due_date: iso(30), status: i < 2 ? "completed" : "in_progress", progress: i < 2 ? 100 : 30, completed_at: i < 2 ? ts(-10) : null, created_at: ts(-30) });
     });
 
+    // Training in the other group practices (for the group training matrix)
+    var refresh = db.modules.filter(function (m) { return m.kind === "refresher"; });
+    [["u_pr2", "p2", induction, [100, 100, 60, 0, 0], 8], ["u_st3", "p2", induction, [100, 100, 100, 100, 70], 5], ["u_pr3", "p3", induction, [100, 30, 0, 0, 0], -6], ["u_st4", "p3", induction, [60, 0, 0, 0, 0], -3], ["u_pr2", "p2", refresh, [100, 100, 0, 0], 12], ["u_pr3", "p3", refresh, [0, 0, 0, 0], -10], ["u_st4", "p3", refresh, [0, 0, 0, 0], -10]].forEach(function (u) {
+      u[2].forEach(function (m, i) {
+        var pr = u[3][i]; if (pr === undefined) return;
+        db.assignments.push({ id: id("t"), module_id: m.id, profile_id: u[0], practice_id: u[1], assigned_by: "u_ga", due_date: iso(u[4] + i), status: pr >= 100 ? "completed" : (pr > 0 ? "in_progress" : "assigned"), progress: pr, completed_at: pr >= 100 ? ts(-12) : null, created_at: ts(-40) });
+      });
+    });
+
     // Snapshot history
     var hist = { p1: [74, 79, 83, 88, 90, 92], p2: [58, 62, 66, 70, 72, 76], p3: [70, 66, 63, 60, 57, 54], p4: [80, 81, 83, 84, 86, 87] };
     Object.keys(hist).forEach(function (pid) {
@@ -139,13 +150,14 @@
       { id: "q3", created_at: ts(-6), kind: "waitlist", practice_type: null, name: "Bethan Cole", email: "bethan@example.com", practice_name: "Cole Dental", sites: null, role: "Practice Manager", message: "", language: "en", status: "new" }
     );
     if (CC.demoHrSeed) CC.demoHrSeed(db);
+    if (CC.demoToolsSeed) CC.demoToolsSeed(db);
     return db;
   }
 
   CC.makeDemoApi = function () {
     var db, uid = null;
     function load() {
-      try { var raw = localStorage.getItem(DB_KEY); if (raw) { db = JSON.parse(raw); if (!db.hr_staff && CC.demoHrSeed) { CC.demoHrSeed(db); save(); } return; } } catch (e) {}
+      try { var raw = localStorage.getItem(DB_KEY); if (raw) { db = JSON.parse(raw); if (!db.hr_staff && CC.demoHrSeed) { CC.demoHrSeed(db); save(); } if (!db.tasks && CC.demoToolsSeed) { CC.demoToolsSeed(db); save(); } return; } } catch (e) {}
       db = seed(); save();
     }
     function save() { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (e) {} }
@@ -226,7 +238,7 @@
         if (!canRead(pid)) return deny();
         var r = role();
         if (r === "group_admin" || r === "inspector" || r === "platform_admin") logAudit("view_dashboard", "practice", pid, pid);
-        var done = db.assessments.filter(function (a) { return a.practice_id === pid && a.status === "completed"; }).sort(function (a, b) { return b.completed_at.localeCompare(a.completed_at); })[0];
+        var done = db.assessments.filter(function (a) { return a.practice_id === pid && a.status === "completed" && (a.kind || "hiw") === "hiw"; }).sort(function (a, b) { return b.completed_at.localeCompare(a.completed_at); })[0];
         var cutoff = iso(-190);
         save();
         return ok({
@@ -369,12 +381,12 @@
       },
 
       assessment: {
-        questions: function () { return ok(db.questions); },
-        list: function (pid) { if (!(canManage(pid) || grantOk(pid))) return ok([]); return ok(db.assessments.filter(function (a) { return a.practice_id === pid; }).sort(function (a, b) { return b.created_at.localeCompare(a.created_at); })); },
+        questions: function (kind) { return ok(db.questions.filter(function (q) { return (q.kind || "hiw") === (kind || "hiw"); })); },
+        list: function (pid, kind) { if (!(canManage(pid) || grantOk(pid))) return ok([]); return ok(db.assessments.filter(function (a) { return a.practice_id === pid && (a.kind || "hiw") === (kind || "hiw"); }).sort(function (a, b) { return b.created_at.localeCompare(a.created_at); })); },
         answers: function (aid) { var a = byId(db.assessments, aid); if (!a || !(canManage(a.practice_id) || grantOk(a.practice_id))) return ok([]); return ok(db.answers.filter(function (x) { return x.assessment_id === aid; })); },
-        start: function (pid, prefill) {
+        start: function (pid, prefill, kind) {
           if (!canManage(pid)) return deny();
-          var a = { id: id("a"), practice_id: pid, started_by: uid, status: "in_progress", score: null, created_at: new Date().toISOString(), completed_at: null };
+          var a = { id: id("a"), kind: kind || "hiw", practice_id: pid, started_by: uid, status: "in_progress", score: null, created_at: new Date().toISOString(), completed_at: null };
           db.assessments.push(a);
           if (prefill) db.answers.filter(function (x) { return x.assessment_id === prefill; }).forEach(function (x) { db.answers.push({ assessment_id: a.id, question_id: x.question_id, answer: x.answer, note: x.note }); });
           save(); return ok(a);
@@ -417,6 +429,11 @@
 
       hr: CC.makeDemoHr({ db: function () { return db; }, me: me, uid: function () { return uid; }, canManage: canManage, isGA: isGA, save: save, ok: ok, deny: deny, logAudit: logAudit, byId: byId }),
 
+      alerts: {
+        getPrefs: function () { db.alert_prefs = db.alert_prefs || {}; return ok({ email_digest: db.alert_prefs[uid] !== false }); },
+        setPrefs: function (on) { db.alert_prefs = db.alert_prefs || {}; db.alert_prefs[uid] = !!on; save(); return ok(); }
+      },
+
       audit: {
         log: function (action, entity, entityId, pid, detail) { if (pid && !canRead(pid)) return Promise.resolve(); logAudit(action, entity, entityId, pid, detail); save(); return Promise.resolve(); },
         list: function (f) {
@@ -435,6 +452,7 @@
         update: function (qid, patch) { if (role() !== "platform_admin") return deny(); Object.assign(byId(db.enquiries, qid), patch); save(); return ok(); }
       }
     };
+    Object.assign(api, CC.makeDemoTools({ db: function () { return db; }, me: me, uid: function () { return uid; }, canManage: canManage, isGA: isGA, canBook: canBook, canRead: canRead, grantOk: grantOk, save: save, ok: ok, deny: deny, logAudit: logAudit, byId: byId }));
     return api;
   };
 })();

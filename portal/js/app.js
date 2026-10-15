@@ -12,6 +12,14 @@
     practices:  { label: "Practices",           ico: "🏥", roles: ["group_admin"] },
     check:      { label: "Compliance check",    ico: "✔",  scoped: true,  roles: ["principal", "practice_manager", "platform_admin"] },
     evidence:   { label: "Evidence",            ico: "🗂", scoped: true,  roles: ["principal", "practice_manager", "platform_admin"] },
+    grouptrain: { label: "Group training",      ico: "🎓", roles: ["group_admin"] },
+    tasks:      { label: "Tasks & calendar",    ico: "📆", scoped: true,  roles: ["principal", "practice_manager", "staff", "group_admin", "platform_admin"] },
+    logs:       { label: "Logs",                ico: "📝", scoped: true,  roles: ["principal", "practice_manager", "staff", "platform_admin"] },
+    maintenance:{ label: "Maintenance",         ico: "🔧", scoped: true,  roles: ["principal", "practice_manager", "group_admin", "platform_admin"] },
+    policies:   { label: "Policies",            ico: "📄", scoped: true,  roles: ["principal", "practice_manager", "staff"] },
+    staffcompliance: { label: "Staff compliance", ico: "✅", scoped: true, roles: ["principal", "practice_manager", "group_admin", "platform_admin"] },
+    audits:     { label: "Audits",              ico: "📋", scoped: true,  roles: ["principal", "practice_manager", "platform_admin"] },
+    alerts:     { label: "Alerts",              ico: "🔔", roles: ["principal", "practice_manager", "staff", "group_admin"] },
     training:   { label: "Team training",       ico: "🎓", scoped: true,  roles: ["principal", "practice_manager"] },
     hr:         { label: "HR",                  ico: "👥", scoped: true,  roles: ["principal", "practice_manager", "platform_admin", "group_admin"] },
     hrgroup:    { label: "Group HR",            ico: "👥", roles: ["group_admin"] },
@@ -28,12 +36,12 @@
     settings:   { label: "Settings",            ico: "⚙",  roles: ["principal", "practice_manager", "staff", "group_admin", "inspector", "platform_admin"] }
   };
   var NAV = {
-    principal:        ["dashboard", "check", "evidence", "training", "my", "hr", "myhr", "bookings", "team", "inspectors", "audit", "settings"],
-    practice_manager: ["dashboard", "check", "evidence", "training", "my", "hr", "myhr", "bookings", "team", "audit", "settings"],
-    staff:            ["dashboard", "my", "myhr", "settings"],
-    group_admin:      ["group", "hrgroup", "practices", "bookings", "audit", "settings"],
+    principal:        ["dashboard", "check", "audits", "evidence", "tasks", "logs", "maintenance", "policies", "training", "staffcompliance", "my", "hr", "myhr", "alerts", "bookings", "team", "inspectors", "audit", "settings"],
+    practice_manager: ["dashboard", "check", "audits", "evidence", "tasks", "logs", "maintenance", "policies", "training", "staffcompliance", "my", "hr", "myhr", "alerts", "bookings", "team", "audit", "settings"],
+    staff:            ["dashboard", "tasks", "logs", "policies", "my", "myhr", "alerts", "settings"],
+    group_admin:      ["group", "grouptrain", "hrgroup", "staffcompliance", "tasks", "maintenance", "alerts", "practices", "bookings", "audit", "settings"],
     inspector:        ["inspect", "settings"],
-    platform_admin:   ["users", "orgs", "enquiries", "bookings", "dashboard", "evidence", "check", "hr", "audit", "settings"]
+    platform_admin:   ["users", "orgs", "enquiries", "bookings", "dashboard", "evidence", "check", "audits", "tasks", "logs", "maintenance", "staffcompliance", "hr", "audit", "settings"]
   };
   var MULTI = ["platform_admin", "group_admin", "inspector"];
 
@@ -183,6 +191,14 @@
     practices: P('<path d="M3 21h18M6 21V10h12v11M12 6v8M8 10V6h8v4"/>'),
     check: P('<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/>'),
     evidence: P('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+    grouptrain: P('<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/><path d="M22 9v6"/>'),
+    tasks: P('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/>'),
+    logs: P('<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3M9 10h6M9 14h6M9 18h3"/>'),
+    maintenance: P('<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>'),
+    policies: P('<path d="M7 3h8l4 4v14H7z"/><path d="M14 3v5h5M10 12h6M10 16h6"/>'),
+    staffcompliance: P('<circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-5.5 7-5.5 1.5 0 2.800.3 3.800.9"/><path d="M15 17l2 2 4-4"/>'),
+    audits: P('<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v3H9zM9 13l2 2 4-4"/>'),
+    alerts: P('<path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/>'),
     training: P('<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>'),
     my: P('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'),
     bookings: P('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
@@ -210,6 +226,7 @@
     $("avatar").textContent = initials;
     $("who").innerHTML = CC.esc(p.full_name || p.email) + "<small>" + CC.esc(CC.roleLabel(p.role)) + "</small>";
     document.querySelectorAll("#lang-toggle button").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-lang") === CC.lang); });
+    if (CC.alerts) CC.alerts.refreshBell();
     if ($("back-site")) $("back-site").textContent = CC.t("← Back to website");
   }
 

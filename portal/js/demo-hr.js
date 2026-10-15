@@ -36,7 +36,7 @@
         address: null, start_date: addD(r[4]), end_date: null, employment_type: r[5], contracted_hours: r[6], annual_leave_days: r[7],
         leave_year_start_month: 1, emergency_name: "Next of kin", emergency_relation: "Partner", emergency_phone: "07700 8" + (20000 + i * 91),
         gdc_number: r[8], gdc_expiry: r[8] ? addD(i % 4 === 0 ? 25 : (i % 5 === 0 ? -10 : 200 + i * 7)) : null,
-        indemnity_expiry: r[8] ? addD(150 + i * 5) : null, dbs_expiry: addD(300 + i * 11), photo_path: null, active: true,
+        indemnity_expiry: r[8] ? addD(150 + i * 5) : null, dbs_expiry: addD(300 + i * 11), photo_path: i === 4 ? null : "demo-asset:hs" + (i + 1), active: true,
         created_by: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString()
       };
       db.hr_staff.push(s); byEmail[s.email] = s;
@@ -128,7 +128,7 @@
       },
       photoUrls: function (paths) {
         var m = {}, f = ctx.db().hr_files || {};
-        (paths || []).forEach(function (p) { if (p && f[p]) m[p] = f[p]; });
+        (paths || []).forEach(function (p) { if (!p) return; if (p.indexOf("demo-asset:") === 0) m[p] = "brand/demo/" + p.slice(11) + ".jpg"; else if (f[p]) m[p] = f[p]; });
         return ctx.ok(m);
       },
       leave: {

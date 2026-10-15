@@ -61,7 +61,7 @@
       }
 
       el.innerHTML =
-        '<div class="page-head"><div>' + (role === "platform_admin" || role === "group_admin" ? "" : '<div class="greet">' + esc(t("Hello") + ", " + String((S.profile.full_name || "").split(" ")[0] || "")) + "</div>") + "<h1>" + esc(practice.name || t("Dashboard")) + "</h1><p class=\"muted\">" +
+        '<div class="page-head"><div>' + (role === "platform_admin" || role === "group_admin" ? "" : '<div class="greet">' + esc(t("Hello") + ", " + String(CC.hr ? CC.hr.firstName(S.profile.full_name) : "")) + "</div>") + "<h1>" + esc(practice.name || t("Dashboard")) + "</h1><p class=\"muted\">" +
         esc([practice.health_board, practice.hiw_registration].filter(Boolean).join(" · ")) + "</p></div>" +
         '<div class="actions"><button class="btn btn-secondary btn-sm" onclick="window.print()">' + esc(t("Print summary")) + "</button></div></div>" +
         (["platform_admin", "group_admin"].indexOf(role) >= 0 ? '<div class="banner info"><span>' + esc(t("You are viewing this practice read-only. Your access is recorded in the audit log.")) + "</span></div>" : "") +
@@ -69,7 +69,7 @@
         '<div class="kpi ' + sc.status + '"><div class="label">' + esc(t("Overall compliance")) + '</div><div class="value">' + (sc.overall === null ? "—" : sc.overall + "%") + '</div><div class="sub">' + CC.ragChip(sc.status) + "</div></div>" +
         '<div class="kpi"><div class="label">' + esc(t("Open actions")) + '</div><div class="value">' + sc.outstanding + '</div><div class="sub">' + esc(t("across {n} categories", { n: sc.cats.filter(function (c) { return c.outstanding > 0; }).length })) + "</div></div>" +
         '<div class="kpi ' + (days !== null && days <= 14 && days >= 0 ? "amber" : "") + '"><div class="label">' + esc(t("Next HIW inspection")) + '</div><div class="value" style="font-size:1.5rem">' + esc(practice.next_inspection ? CC.fmtDate(practice.next_inspection) : "—") + '</div><div class="sub">' + esc(daysLabel(days)) + "</div></div>" +
-        cmp + "</div>" +
+        cmp + "</div>" + '<div id="tools-summary"></div>' +
         '<div class="grid-charts">' +
         '<div class="panel"><h3>' + esc(t("Compliance score — last 6 months")) + '</h3><div class="chart-box"><canvas id="ch-trend"></canvas></div></div>' +
         '<div class="panel"><h3>' + esc(t("Category status")) + '</h3><div class="chart-box"><canvas id="ch-donut"></canvas></div></div>' +
@@ -79,6 +79,7 @@
           return '<button class="cat-card ' + c.status + '" data-cat="' + c.key + '"><div class="row"><strong>' + esc(CC.catName(c.key)) + "</strong>" + CC.ragChip(c.status) + '</div><div class="score">' + (c.score === null ? "—" : c.score + "%") + '</div><div class="meta">' + esc(catSummary(c)) + "</div></button>";
         }).join("") + "</div></div>";
 
+      if (CC.fillToolsSummary) CC.fillToolsSummary(document.getElementById("tools-summary"), pid);
       // charts
       var labels = snaps.map(function (s) { return CC.fmtDate(s.taken_on); });
       CC.chart(document.getElementById("ch-trend"), { type: "line", data: { labels: labels, datasets: [{ data: snaps.map(function (s) { return s.score; }), borderColor: cv("--blue-600", cv("--blue-600", "#1467c7")), backgroundColor: cv("--sky-400", cv("--sky-400", "#4fb6e8")) + "2e", fill: true, tension: 0.3, pointRadius: 3 }] },
