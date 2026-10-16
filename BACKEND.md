@@ -30,7 +30,7 @@ Access is **invitation-only**: the database rejects sign-ups for emails that hav
 ## Go live (about 20 minutes, free)
 
 1. Create a free account at supabase.com → **New project**. **Region: London (eu-west-2)** for UK data residency.
-2. **SQL Editor** → paste and run `supabase/01_schema.sql`, then `supabase/02_seed.sql`, then `supabase/03_hr.sql` (the HR module; on an existing project just run 03).
+2. **SQL Editor** → paste and run `supabase/01_schema.sql`, then `supabase/02_seed.sql`, then `03_hr.sql` (HR module), then `05_alerts_grouptraining.sql` (alerts + group training guard), then `06_compliance_tools.sql` (tasks, maintenance, logs, policies, staff checklists, extra audits). On a project you set up earlier, run `03`, `04_hiw_questions.sql` (replaces the old 24 sample questions with the HIW set — it deletes answers given to the old ones) `05` and `06`. A fresh project does not need 04, because `02_seed.sql` already contains the new questions.
    Before running 01, change the last line's email if the admin email isn't `jonathan.milton.anderson@gmail.com`.
 3. **Project Settings → API**: copy the *Project URL* and the *anon public* key into `js/site-config.js`.
    Never use the `service_role` key anywhere in this site.
@@ -50,6 +50,23 @@ Website enquiries (demo / interest / waitlist forms) are saved to the `enquiries
 - **Files:** photos and documents live in a private `hr` storage bucket, path `<practice>/<staff>/<file>`, 10 MB limit; photos are resized in the browser to 480 px.
 - **Not included:** payroll, rotas/shift planning, part-time pro-rata of bank holidays, carry-over of unused leave, public holiday rules for Scotland/NI.
 
+## Group training, alerts and reminder e-mails
+
+- **Group training** (Group Admin → *Group training*): assign modules to everyone (by role) in chosen group practices in one go, then track a practice × module completion matrix and an overdue list. Database rule: the assignee must be an active member of the practice, and a Group Admin can only assign inside their own group.
+- **Alerts** (bell + *Alerts* page): expired items and anything expiring within 60 days — evidence, GDC registration, indemnity and DBS (from HR records), overdue training (due within 14 days or late) and the next HIW inspection (within 30 days). Principals/Practice Managers see their practice, Group Admins every group practice, staff only their own evidence and training.
+- **Reminder e-mails** (live version only): a GitHub Action (`.github/workflows/alert-digest.yml`, weekdays 07:30 UTC) calls the service-role-only SQL function `alerts_due()`, e-mails each person one digest through [Resend](https://resend.com), then records what was sent in `alert_log` so nothing repeats. Reminders go out at 60, 30, 14 and 0 days and once expired. Setup: copy `.github/` and `scripts/` into the root of your repo; add repository secrets `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` (the **service role** key — never put it in the website), `RESEND_API_KEY`, `MAIL_FROM` (a sender on a domain verified in Resend) and optionally `PORTAL_URL`; run the workflow once manually with *dry run* on. Users can opt out on the Alerts page. Group Admins get in-app alerts only, not e-mails (for now).
+
+## Tasks, maintenance, logs, policies, staff compliance and audits (`06_compliance_tools.sql`)
+
+- **Tasks & calendar:** recurring tasks (daily to every five years) with an owner. *Mark done* records who and when and sets the next due date. A month calendar shows tasks, completions, approved leave and the HIW inspection date. *Add recommended tasks* loads a starter set. Group Admins can create tasks across their group.
+- **Maintenance register:** services, tests, insurance and certificates. Enter *last done* and the database works out *next due* (14-month autoclave and 26-month compressor intervals are included as starting values). Managers edit; Group Admins read.
+- **Logs:** autoclave, washer-disinfector, emergency drugs/oxygen/defibrillator, fridge, legionella temperature and X-ray. Any staff member can add an entry; it is signed with their name and cannot be edited or deleted. Out-of-range or unticked entries are flagged "Action needed" and require a note.
+- **Policies:** 15 template policies (English; Welsh titles). Each person reads and confirms; managers see how many of the team have signed. They are templates, not legal advice.
+- **Staff compliance:** per-person training percentage (21 courses with default validity periods, shown as a matrix), recruitment paperwork percentage (14 items; GDC, DBS, indemnity and emergency contact tick automatically from the HR record) and policy sign-off percentage, rolled into an overall figure. Group Admins read.
+- **Audits:** infection prevention & control, clinical record keeping, antibiotic prescribing, patient survey and disability access. They use the same question engine as the HIW self-assessment but do **not** change the HIW score.
+- **Alerts and dashboard:** overdue tasks and maintenance now appear in the bell, the Alerts page and the e-mail digest (daily and weekly tasks are in-app only), and the dashboard shows task, policy, staff-compliance and maintenance tiles.
+- Content lives in `portal/js/tools-content.js` and `portal/js/audit-content.js`; `supabase/tools/build_06.py` regenerates `06_compliance_tools.sql` from them (`python3 supabase/tools/build_06.py`). Audit questions, task and maintenance intervals, course validity periods and policy text are starting points for a dental compliance expert to review. Welsh is not proofread.
+
 ## Things to know
 
 - **Free-tier limits** (third-party summaries; confirm on [supabase.com/pricing](https://supabase.com/pricing)): 500 MB database, 1 GB files, 50,000 monthly users, two free projects.
@@ -60,13 +77,13 @@ Website enquiries (demo / interest / waitlist forms) are saved to the `enquiries
 - **Scores are calculated in the browser** from de-identified data the database supplies. That is fine for an MVP but a Principal could tamper with their own practice's stored trend snapshot. Hardening step: move scoring into a database function.
 - **Two-factor is available, not enforced.** Principals and Group Admins see a prompt. Enforcing it means requiring `aal2` in the RLS helpers.
 - **Billing** is only a recorded preference and an illustrative price. There is no payment collection.
-- **Content is illustrative.** The 24 self-assessment questions and the training outlines in `02_seed.sql` must be mapped to HIW's actual framework by a dental compliance expert, and training needs real learning content. Welsh has not been proofread by a native speaker.
+- **Questions are derived, not official.** The 74 self-assessment questions come from the HIW dental inspection workbook (Findings and Recommendations) and keep the six scoring categories. Each has an 'evidence' hint. A dental compliance expert should confirm them against HIW's current framework and the Private Dentistry (Wales) Regulations (e.g. WHTM 01-05 intervals, IR(ME)R wording). Training outlines are still illustrative and need real learning content. Welsh has not been proofread by a native speaker (and the evidence hints are English only).
 - **Deleting evidence is deliberately not possible** from the app (audit trail). Remove files from the Supabase dashboard if legally required.
 
 ## How it was tested
 
-- `supabase/tests/rls_test.py` — 127 checks (includes the HR rules: staff isolation, group admin read-only, leave approval guards, who's-off privacy, HR file access) run against a real PostgreSQL server: invitation gating, every role's read/write limits, group isolation, inspector grant expiry/revocation, audit immutability. (Run it by stubbing Supabase's `auth`/`storage` schemas, see `stubs.sql`.)
-- `portal/tests/smoke.js` — 320 checks in a simulated browser: every role × every page in English and Welsh, plus real flows (assessment → gap report, verify, invite, grant, book, bulk book, permission denials).
+- `supabase/tests/rls_test.py` — 196 checks (includes tasks, maintenance, logs, policies, checklists, audit kinds, group training and alert rules, plus the HR rules: staff isolation, group admin read-only, leave approval guards, who's-off privacy, HR file access) run against a real PostgreSQL server: invitation gating, every role's read/write limits, group isolation, inspector grant expiry/revocation, audit immutability. (Run it by stubbing Supabase's `auth`/`storage` schemas, see `stubs.sql`.)
+- `portal/tests/smoke.js` — 524 checks in a simulated browser: every role × every page in English and Welsh, plus real flows (assessment → gap report, verify, invite, grant, book, bulk book, permission denials).
 - The live Supabase connection itself (auth emails, storage uploads, PostgREST) could not be exercised from the build environment. Do a first-run pass yourself: sign up, upload a file, invite a Principal, sign in as them.
 
 ## Folder map
@@ -75,6 +92,10 @@ Website enquiries (demo / interest / waitlist forms) are saved to the `enquiries
 supabase/01_schema.sql   tables, security rules (RLS), storage policies, RPCs
 supabase/02_seed.sql     self-assessment questions, training modules (EN/CY)
 supabase/03_hr.sql       HR module: staff, leave, documents, notes, who's-off, hr storage bucket
+supabase/04_hiw_questions.sql  upgrade: HIW-workbook question set
+supabase/06_compliance_tools.sql  tasks, maintenance, logs, policies, checklists, audit kinds (generated)
+supabase/05_alerts_grouptraining.sql  alert prefs/log, alerts_due(), assignment guard
+scripts/send-alert-digests.mjs  e-mail reminder job (run by .github/workflows/alert-digest.yml)
 supabase/tests/          database permission tests
 portal/app.html          the portal
 portal/js/api-supabase.js  live data layer        portal/js/api-demo.js  demo data layer

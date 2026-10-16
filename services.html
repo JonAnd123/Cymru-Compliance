@@ -42,7 +42,7 @@
     <div class="container">
       <span class="eyebrow" data-i18n="svc-eyebrow">The platform</span>
       <h1 data-i18n="svc-title">One login. Every part of your compliance workload.</h1>
-      <p class="lede" data-i18n="svc-sub">From day-to-day evidence tracking to expert-led inspection preparation — built around the categories HIW actually inspects.</p>
+      <p class="lede" data-i18n="svc-sub">From day-to-day evidence, HR, tasks and logs to expert-led inspection preparation — built around the categories HIW actually inspects.</p>
       <nav class="service-nav" aria-label="Jump to service">
         <a href="#dashboard" data-i18n="svc-nav-1">Dashboard</a>
         <a href="#certificates" data-i18n="svc-nav-2">Certificates &amp; Evidence</a>
@@ -51,6 +51,14 @@
         <a href="#additional-training" data-i18n="svc-nav-5">Additional Training</a>
         <a href="#pm-training" data-i18n="svc-nav-6">Practice Manager Training</a>
         <a href="#pre-inspection" data-i18n="svc-nav-7">Pre-Inspection Visit</a>
+        <a href="#hr" data-i18n="svc-nav-hr">HR &amp; Staff Records</a>
+        <a href="#tasks" data-i18n="svc-nav-tasks">Tasks &amp; Calendar</a>
+        <a href="#logs" data-i18n="svc-nav-logs">Digital Logs</a>
+        <a href="#maintenance" data-i18n="svc-nav-maint">Maintenance Register</a>
+        <a href="#policies" data-i18n="svc-nav-pol">Policies with Sign-off</a>
+        <a href="#staff-compliance" data-i18n="svc-nav-staffc">Staff Compliance &amp; Training Matrix</a>
+        <a href="#audits" data-i18n="svc-nav-aud">Audits</a>
+        <a href="#alerts" data-i18n="svc-nav-alert">Alerts Before Anything Expires</a>
         <a href="#groups" data-i18n="svc-nav-8">Group Accounts</a>
       </nav>
     </div>
@@ -72,19 +80,8 @@
             <li data-i18n="dash-li-4">Drill down from any category into the specific outstanding items, with automated reminders ahead of expiry</li>
           </ul>
         </div>
-        <div class="feature-visual">
-          <div class="panel">
-            <span class="mini-label">Compliance score — 6 months</span>
-            <div class="bar"><span style="width:62%"></span></div>
-            <div class="bar"><span style="width:71%"></span></div>
-            <div class="bar"><span style="width:84%"></span></div>
-            <div class="bar"><span style="width:92%"></span></div>
-          </div>
-          <div class="panel">
-            <div class="rag-row"><span><span class="rag-dot green"></span>Registration &amp; documentation</span><span>Green</span></div>
-            <div class="rag-row"><span><span class="rag-dot amber"></span>Staff training &amp; DBS</span><span>Amber</span></div>
-            <div class="rag-row"><span><span class="rag-dot green"></span>Decontamination</span><span>Green</span></div>
-          </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/dashboard.jpg" alt="Compliance dashboard" loading="lazy" width="1800" height="1075"></figure>
         </div>
       </div>
 
@@ -101,13 +98,8 @@
             <li data-i18n="certs-li-4">Verification workflow: a Principal or Practice Manager signs off staff-uploaded documents as verified</li>
           </ul>
         </div>
-        <div class="feature-visual">
-          <div class="panel">
-            <span class="mini-label">Evidence library</span>
-            <div class="rag-row"><span>DBS certificate — J. Williams</span><span class="tag" style="background:rgba(255,255,255,0.14);color:#fff;">Verified</span></div>
-            <div class="rag-row"><span>Autoclave calibration</span><span class="tag amber" style="background:rgba(255,190,77,0.18);color:#ffbe4d;">Expires 12d</span></div>
-            <div class="rag-row"><span>Indemnity insurance</span><span class="tag" style="background:rgba(255,255,255,0.14);color:#fff;">Verified</span></div>
-          </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/evidence.jpg" alt="Evidence library" loading="lazy" width="1800" height="1075"></figure>
         </div>
       </div>
 
@@ -123,13 +115,8 @@
             <li data-i18n="induction-li-3">Feeds directly into the practice compliance dashboard</li>
           </ul>
         </div>
-        <div class="feature-visual">
-          <div class="panel">
-            <span class="mini-label">Induction completion — new starters</span>
-            <div class="rag-row"><span>R. Evans</span><span>100%</span></div>
-            <div class="rag-row"><span>S. Patel</span><span>80%</span></div>
-            <div class="rag-row"><span>L. Jones</span><span>40%</span></div>
-          </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/team-training.jpg" alt="Team training and induction progress" loading="lazy" width="1800" height="1075"></figure>
         </div>
       </div>
 
@@ -145,12 +132,8 @@
             <li data-i18n="check-li-3">Feeds directly back into the dashboard's red/amber/green status and action list</li>
           </ul>
         </div>
-        <div class="feature-visual">
-          <div class="panel">
-            <span class="mini-label">Self-assessment — gap report</span>
-            <div class="rag-row"><span>3 items outstanding</span><span class="tag amber" style="background:rgba(255,190,77,0.18);color:#ffbe4d;">Amber</span></div>
-            <div class="rag-row"><span>Radiation protection log</span><span>Action needed</span></div>
-          </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/check.jpg" alt="Compliance check self-assessment" loading="lazy" width="1800" height="1075"></figure>
         </div>
       </div>
 
@@ -165,12 +148,8 @@
             <li data-i18n="addl-li-2">Assign to an individual, a whole practice, or — for Group Admins — across multiple practices in one action</li>
           </ul>
         </div>
-        <div class="feature-visual">
-          <div class="panel">
-            <span class="mini-label">Refresher training due</span>
-            <div class="rag-row"><span>Infection control (annual)</span><span>Due in 30d</span></div>
-            <div class="rag-row"><span>Safeguarding renewal</span><span>Due in 60d</span></div>
-          </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/my-training.jpg" alt="My records and training" loading="lazy" width="1800" height="1075"></figure>
         </div>
       </div>
 
@@ -188,12 +167,8 @@
           </ul>
           <a href="pricing.html#addons" class="btn btn-secondary" data-i18n="pm-cta">See pricing →</a>
         </div>
-        <div class="feature-visual">
-          <div class="panel">
-            <span class="mini-label">Practice Manager Training</span>
-            <div class="rag-row"><span>Module progress</span><span>6 / 8 complete</span></div>
-            <div class="rag-row"><span>Next live session</span><span>Thu, 2pm</span></div>
-          </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/bookings.jpg" alt="Bookings for Practice Manager training" loading="lazy" width="1800" height="1075"></figure>
         </div>
       </div>
 
@@ -210,12 +185,150 @@
           </ul>
           <a href="pricing.html#addons" class="btn btn-secondary" data-i18n="visit-cta">See pricing →</a>
         </div>
-        <div class="feature-visual">
-          <div class="panel">
-            <span class="mini-label">Pre-inspection visit</span>
-            <div class="rag-row"><span>Booked — Tue 14 Oct</span><span>Confirmed</span></div>
-            <div class="rag-row"><span>Gap report</span><span>Delivered</span></div>
-          </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/bookings.jpg" alt="Pre-inspection visit booking" loading="lazy" width="1800" height="1075"></figure>
+        </div>
+      </div>
+
+            <!-- HR -->
+      <div class="feature-row reverse" id="hr">
+        <div>
+          <span class="tag amber" data-i18n="hr-tag">New</span>
+          <h2 data-i18n="hr-title">HR &amp; Staff Records</h2>
+          <p data-i18n="hr-body">Everything about your team in one secure place — records, leave, absence and recruitment — linked straight to the compliance dashboard.</p>
+          <ul class="card-list">
+            <li data-i18n="hr-li-1">Staff profiles with photo, role, contract details and emergency contacts, visible only to those who should see them</li>
+            <li data-i18n="hr-li-2">GDC registration, indemnity and DBS expiry dates tracked per person, with alerts before anything lapses</li>
+            <li data-i18n="hr-li-3">Leave requests and approvals with entitlement balances, a team calendar with Welsh bank holidays, and absence recording</li>
+            <li data-i18n="hr-li-4">A recruitment checklist for every new starter, covering the pre-employment checks HIW cites most</li>
+            <li data-i18n="hr-li-5">Staff self-service: each team member sees their own record and requests their own leave</li>
+          </ul>
+        </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/hr.jpg" alt="HR module showing staff profiles, leave and expiry alerts" loading="lazy" width="1800" height="1075"></figure>
+        </div>
+      </div>
+
+      <!-- TASKS -->
+      <div class="feature-row" id="tasks">
+        <div>
+          <span class="tag amber" data-i18n="tasks-tag">New</span>
+          <h2 data-i18n="tasks-title">Tasks &amp; Calendar</h2>
+          <p data-i18n="tasks-body">The recurring jobs that keep a practice compliant, scheduled, assigned and ticked off — with proof that they were done.</p>
+          <ul class="card-list">
+            <li data-i18n="tasks-li-1">A ready-made library of recurring compliance tasks, from daily checks to annual reviews</li>
+            <li data-i18n="tasks-li-2">Assign to a named team member; see everything on a month calendar or as a list</li>
+            <li data-i18n="tasks-li-3">Mark done with a note — overdue and due-soon items are flagged on the dashboard</li>
+            <li data-i18n="tasks-li-4">Next due date is calculated automatically from the task frequency</li>
+          </ul>
+        </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/tasks.jpg" alt="Tasks and calendar view" loading="lazy" width="1800" height="1075"></figure>
+        </div>
+      </div>
+
+      <!-- LOGS -->
+      <div class="feature-row reverse" id="logs">
+        <div>
+          <span class="tag amber" data-i18n="logs-tag">New</span>
+          <h2 data-i18n="logs-title">Digital Logs</h2>
+          <p data-i18n="logs-body">Replace the paper logbooks. Every entry is signed, time-stamped and cannot be edited afterwards.</p>
+          <ul class="card-list">
+            <li data-i18n="logs-li-1">Autoclave and washer-disinfector cycles, emergency drugs and oxygen checks, fridge temperatures, legionella and X-ray logs</li>
+            <li data-i18n="logs-li-2">Pass/fail checks with guidance, so a missed reading is obvious</li>
+            <li data-i18n="logs-li-3">Insert-only records: the audit trail an inspector wants to see</li>
+            <li data-i18n="logs-li-4">Recent entries and gaps visible at a glance</li>
+          </ul>
+        </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/logs.jpg" alt="Digital logs for autoclave, fridge, legionella and more" loading="lazy" width="1800" height="1075"></figure>
+        </div>
+      </div>
+
+      <!-- MAINTENANCE -->
+      <div class="feature-row" id="maintenance">
+        <div>
+          <span class="tag amber" data-i18n="maint-tag">New</span>
+          <h2 data-i18n="maint-title">Maintenance Register</h2>
+          <p data-i18n="maint-body">Every service, test and certificate for your equipment and premises, with the next due date worked out for you.</p>
+          <ul class="card-list">
+            <li data-i18n="maint-li-1">Gas safety, electrical (PAT), fire equipment, autoclave servicing, compressor, X-ray testing and more</li>
+            <li data-i18n="maint-li-2">One click on “Done today” rolls the next due date forward</li>
+            <li data-i18n="maint-li-3">Items due within 60 days feed the alerts bell and the e-mail digest</li>
+            <li data-i18n="maint-li-4">Group Admins see maintenance across every site</li>
+          </ul>
+        </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/maintenance.jpg" alt="Maintenance register with next due dates" loading="lazy" width="1800" height="1075"></figure>
+        </div>
+      </div>
+
+      <!-- POLICIES -->
+      <div class="feature-row reverse" id="policies">
+        <div>
+          <span class="tag amber" data-i18n="pol-tag">New</span>
+          <h2 data-i18n="pol-title">Policies with Sign-off</h2>
+          <p data-i18n="pol-body">A library of policy templates in English and Welsh, with proof that every team member has read and confirmed each one.</p>
+          <ul class="card-list">
+            <li data-i18n="pol-li-1">15 policy templates covering the areas HIW expects, with review dates</li>
+            <li data-i18n="pol-li-2">Staff read and confirm in the portal; the practice sees exactly who has and hasn't</li>
+            <li data-i18n="pol-li-3">“To review” list for each team member, so nothing is missed after a policy update</li>
+          </ul>
+        </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/policies.jpg" alt="Policy library with read and confirm sign-off" loading="lazy" width="1800" height="1075"></figure>
+        </div>
+      </div>
+
+      <!-- STAFF-COMPLIANCE -->
+      <div class="feature-row" id="staff-compliance">
+        <div>
+          <span class="tag amber" data-i18n="staffc-tag">New</span>
+          <h2 data-i18n="staffc-title">Staff Compliance &amp; Training Matrix</h2>
+          <p data-i18n="staffc-body">See at a glance who is up to date on training, recruitment checks and policies — person by person.</p>
+          <ul class="card-list">
+            <li data-i18n="staffc-li-1">A training matrix across 21 core courses, each with its own validity period</li>
+            <li data-i18n="staffc-li-2">Recruitment and induction progress for every starter</li>
+            <li data-i18n="staffc-li-3">A compliance score per team member, and a colour-coded view of gaps</li>
+            <li data-i18n="staffc-li-4">Assign training to one person, a whole practice, or a whole group</li>
+          </ul>
+        </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/staff-compliance.jpg" alt="Staff compliance and training matrix" loading="lazy" width="1800" height="1075"></figure>
+        </div>
+      </div>
+
+      <!-- AUDITS -->
+      <div class="feature-row reverse" id="audits">
+        <div>
+          <span class="tag amber" data-i18n="aud-tag">New</span>
+          <h2 data-i18n="aud-title">Audits</h2>
+          <p data-i18n="aud-body">Run the audits inspectors expect, then act on the gap report — with the results feeding back into the dashboard.</p>
+          <ul class="card-list">
+            <li data-i18n="aud-li-1">HIW self-assessment, infection prevention &amp; control, records, antibiotic prescribing, patient survey and disability access</li>
+            <li data-i18n="aud-li-2">Answer yes / partial / no with notes, and complete to generate a gap report</li>
+            <li data-i18n="aud-li-3">History of completed audits, ready to show an inspector</li>
+          </ul>
+        </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/audits.jpg" alt="Audit programme" loading="lazy" width="1800" height="1075"></figure>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="feature-row" id="alerts">
+        <div>
+          <span class="tag amber" data-i18n="alert-tag">New</span>
+          <h2 data-i18n="alert-title">Alerts Before Anything Expires</h2>
+          <p data-i18n="alert-body">One bell, one list: certificates, DBS, tasks and maintenance that are overdue or coming due — plus an e-mail digest.</p>
+          <ul class="card-list">
+            <li data-i18n="alert-li-1">In-app alerts for evidence, staff registrations, tasks and maintenance</li>
+            <li data-i18n="alert-li-2">A summary e-mail so nobody has to remember to log in</li>
+            <li data-i18n="alert-li-3">Group Admins see alerts across every practice</li>
+          </ul>
+        </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/alerts.jpg" alt="Alerts view" loading="lazy" width="1800" height="1075"></figure>
         </div>
       </div>
 
@@ -232,17 +345,28 @@
             <li data-i18n="groups-svc-li-4">Consolidated group billing, or per-practice recharge — configurable at setup</li>
             <li data-i18n="groups-svc-li-5">Bulk-book practice manager training or pre-inspection visits across multiple sites in one action</li>
             <li data-i18n="groups-svc-li-6">Strict data isolation: a Group Admin only ever sees their own group's practices</li>
+            <li data-i18n="groups-svc-li-7">Group HR: staff, leave and expiring registrations across every site in one roll-up</li>
+            <li data-i18n="groups-svc-li-8">Group training: assign a course to selected practices at once and track completion in a single matrix</li>
+            <li data-i18n="groups-svc-li-9">Staff compliance, maintenance and tasks rolled up by practice, with a full audit log of group-level access</li>
           </ul>
           <a href="contact.html#group" class="btn btn-primary" data-i18n="groups-svc-cta">Enquire as a group →</a>
         </div>
-        <div class="feature-visual">
-          <div class="panel">
-            <span class="mini-label">Group overview</span>
-            <div class="rag-row"><span><span class="rag-dot green"></span>Cardiff Bay Dental</span><span>96%</span></div>
-            <div class="rag-row"><span><span class="rag-dot amber"></span>Newport High St</span><span>78%</span></div>
-            <div class="rag-row"><span><span class="rag-dot red"></span>Swansea Marina</span><span>54%</span></div>
-          </div>
+        <div class="feature-visual shot-visual">
+          <figure class="shot"><img src="img/screens/group.jpg" alt="Group overview dashboard" loading="lazy" width="1800" height="1075"></figure>
         </div>
+      </div>
+
+
+      <!-- GROUP GALLERY -->
+      <div class="section-head center" style="padding-top:56px;">
+        <span class="eyebrow" data-i18n="gal-eyebrow">Group Admin view</span>
+        <h2 data-i18n="gal-title">Every site, one screen at a time</h2>
+      </div>
+      <div class="shot-grid">
+        <div><figure class="shot"><img src="img/screens/group-hr.jpg" alt="Group HR roll-up" loading="lazy" width="1800" height="1075"></figure><p class="small" data-i18n="gal-1">Group HR — staff, leave and expiries by practice</p></div>
+        <div><figure class="shot"><img src="img/screens/group-training.jpg" alt="Group training matrix" loading="lazy" width="1800" height="1075"></figure><p class="small" data-i18n="gal-2">Group training — assign once, track every site</p></div>
+        <div><figure class="shot"><img src="img/screens/group-staff.jpg" alt="Group staff compliance" loading="lazy" width="1800" height="1075"></figure><p class="small" data-i18n="gal-3">Staff compliance across the whole group</p></div>
+        <div><figure class="shot"><img src="img/screens/group-maintenance.jpg" alt="Group maintenance" loading="lazy" width="1800" height="1075"></figure><p class="small" data-i18n="gal-4">Maintenance and tasks, site by site</p></div>
       </div>
 
     </div>

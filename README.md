@@ -85,3 +85,9 @@ compilation step. To change text: edit the English directly in the relevant
 a `data-i18n="..."` attribute. To change colours or spacing: edit the CSS
 variables at the top of `css/style.css`. Open any `.html` file directly in a
 browser to preview changes before uploading.
+
+## Themes
+- `portal/app.html` — Cymru Compliance (blue)
+- `portal/practiceplan.html` — Practice Plan white-label (black and gold)
+
+All themes and the marketing site footer show a "Powered by Draigworks" badge linking to https://www.draigworks.uk (transparent logos in `img/draigworks-white.png` / `-dark.png`, injected by `portal/js/app.js` and `js/main.js`).
