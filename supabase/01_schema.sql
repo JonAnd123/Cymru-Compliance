@@ -131,6 +131,9 @@ create table public.assessment_questions (
   ref text not null,
   text_en text not null,
   text_cy text,
+  hint_en text,
+  kind text not null default 'hiw',
+  section text,
   sort int default 0
 );
 
@@ -138,6 +141,7 @@ create table public.assessments (
   id uuid primary key default gen_random_uuid(),
   practice_id uuid not null references public.practices(id) on delete cascade,
   started_by uuid default auth.uid() references public.profiles(id) on delete set null,
+  kind text not null default 'hiw',
   status text not null default 'in_progress' check (status in ('in_progress','completed')),
   score int,
   created_at timestamptz not null default now(),
@@ -395,7 +399,7 @@ begin
     perform public.log_event('view_dashboard','practice',p_practice::text,p_practice,'{}'::jsonb);
   end if;
   select id into aid from public.assessments
-   where practice_id = p_practice and status = 'completed' order by completed_at desc limit 1;
+   where practice_id = p_practice and status = 'completed' and kind = 'hiw' order by completed_at desc limit 1;
   select jsonb_build_object(
     'practice', (select to_jsonb(p) from public.practices p where p.id = p_practice),
     'evidence', coalesce((select jsonb_agg(jsonb_build_object(
