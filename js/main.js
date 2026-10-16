@@ -118,7 +118,7 @@
   // When Supabase is configured (js/site-config.js) enquiries are saved to the
   // `enquiries` table and appear in the portal's admin area. Otherwise (or if the
   // request fails) we fall back to opening the visitor's email client.
-  var CONTACT_EMAIL = "jonathan.milton.anderson@gmail.com";
+  var CONTACT_EMAIL = "solutions@draigworks.uk";
 
   function backendConfigured() {
     var c = window.CC_CONFIG || {};
@@ -222,4 +222,14 @@
       };
     }, function () { return "Cymru Compliance portal — access request"; });
   });
+})();
+
+/* Draigworks "powered by" badge in the site footer */
+(function () {
+  function add() {
+    var f = document.querySelector(".site-footer .container");
+    if (!f || f.querySelector(".dw-badge")) return;
+    f.insertAdjacentHTML("beforeend", '<a class="dw-badge" href="https://www.draigworks.uk" target="_blank" rel="noopener" title="Draigworks"><span>Powered by</span><img src="' + (document.querySelector('script[src$="js/main.js"]').getAttribute("src").replace("js/main.js", "") ) + 'img/draigworks-white.png" alt="Draigworks" width="110" height="29"></a>');
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", add); else add();
 })();

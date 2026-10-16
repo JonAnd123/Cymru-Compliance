@@ -55,7 +55,8 @@
   CC.refresh = function () { return CC.render(); };
 
   /* ---------- auth screens ---------- */
-  function authCard(html) { $("auth-card").innerHTML = html; }
+  function poweredBadge(onDark) { return '<a class="dw-badge" href="https://www.draigworks.uk" target="_blank" rel="noopener" title="Draigworks"><span>Powered by</span><img src="' + "brand/draigworks-" + (onDark ? "white" : "dark") + ".png" + '" alt="Draigworks" width="110" height="29"></a>'; }
+  function authCard(html) { $("auth-card").innerHTML = html + poweredBadge(); }
   var BRAND = window.CC_BRAND || { name: "Cymru Compliance", logo: "../img/logo-header.png" };
   function brandRow() { return '<div class="brand-row"><img src="' + BRAND.logo + '" alt="" width="40" height="40" onerror="this.style.display=\'none\'"><span>' + CC.esc(BRAND.name) + "</span></div>"; }
   function langRow() {
@@ -228,6 +229,8 @@
     document.querySelectorAll("#lang-toggle button").forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-lang") === CC.lang); });
     if (CC.alerts) CC.alerts.refreshBell();
     if ($("back-site")) $("back-site").textContent = CC.t("← Back to website");
+    var sf = document.querySelector(".side-foot");
+    if (sf && !sf.querySelector(".dw-badge")) sf.insertAdjacentHTML("beforeend", poweredBadge(true));
   }
 
   function buildPracticeSelect(route) {
